@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'data/database/app_database.dart';
+import 'data/database/seeder.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final db = AppDatabase();
+  await DatabaseSeeder.seedCategories(db);
+
   runApp(const MyApp());
 }
 
