@@ -50,10 +50,10 @@ class MonthlyComparisonCard extends ConsumerWidget {
                     const SizedBox(height: 16),
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                          BoxShadow(color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
                         ],
                       ),
                       child: Column(
@@ -69,7 +69,7 @@ class MonthlyComparisonCard extends ConsumerWidget {
                                   child: Text(
                                     monthFormat.format(prev),
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey[600], fontSize: 13),
+                                    style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
                                   ),
                                 ),
                                 Expanded(
@@ -148,7 +148,7 @@ class _ComparisonRow extends StatelessWidget {
           // Label
           Expanded(
             flex: 5,
-            child: Text(label, style: TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: Colors.grey[700])),
+            child: Text(label, style: TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: Theme.of(context).colorScheme.onSurface)),
           ),
           // Previous month value
           Expanded(
@@ -156,7 +156,7 @@ class _ComparisonRow extends StatelessWidget {
             child: Text(
               currency.format(previous),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: fontSize, color: Colors.grey[600]),
+              style: TextStyle(fontSize: fontSize, color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
           ),
           // Current month value
@@ -165,7 +165,7 @@ class _ComparisonRow extends StatelessWidget {
             child: Text(
               currency.format(current),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: isBold ? AppTheme.primaryGreen : Colors.black87),
+              style: TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: isBold ? AppTheme.primaryGreen : Theme.of(context).colorScheme.onSurface),
             ),
           ),
           // Delta indicator

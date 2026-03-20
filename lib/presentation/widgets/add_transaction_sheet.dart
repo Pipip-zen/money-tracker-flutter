@@ -159,7 +159,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                 height: 4,
                 width: 40,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -286,7 +286,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                       height: 56,
                       child: TextButton(
                         onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
+                        style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant),
                         child: const Text('Batalkan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
@@ -339,7 +339,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                   backgroundColor: Theme.of(context).colorScheme.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: isSelected ? catColor : Colors.grey[300]!),
+                    side: BorderSide(color: isSelected ? catColor : Theme.of(context).colorScheme.surfaceContainerHigh),
                   ),
                 ),
               );
@@ -355,7 +355,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
   Widget _buildTableCalendar() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300]!),
+        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
         borderRadius: BorderRadius.circular(16),
       ),
       child: TableCalendar(

@@ -85,7 +85,6 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
-        backgroundColor: AppTheme.primaryGreen,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -122,7 +121,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               ),
               error: (e, st) => Center(child: Text('Error: $e')),
             ),
-            const Divider(height: 48, thickness: 8, color: Color(0xFFF0F0F0)),
+            const Divider(height: 48, thickness: 8),
             sixMonthsAsync.when(
               data: (txs) => _buildBarChart(txs, sixMonthsAgo),
               loading: () => const SizedBox(
@@ -131,7 +130,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               ),
               error: (e, st) => Center(child: Text('Error: $e')),
             ),
-            const Divider(height: 48, thickness: 8, color: Color(0xFFF0F0F0)),
+            const Divider(height: 48, thickness: 8),
             MonthlyComparisonCard(currentMonth: _currentMonth),
             const SizedBox(height: 40),
           ],
@@ -143,12 +142,12 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   Widget _buildCurrentMonthStats(List<TransactionEntity> transactions) {
     final expenses = transactions.where((t) => t.type == 'expense').toList();
     if (expenses.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(32.0),
+      return Padding(
+        padding: const EdgeInsets.all(32.0),
         child: Center(
           child: Text(
             'Belum ada pengeluaran di bulan ini.',
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
         ),
       );
@@ -237,12 +236,12 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           const SizedBox(height: 4),
           Text(
             currencyFormat.format(sortedEntries[_touchedPieIndex].value),
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ] else ...[
-          const Text(
+          Text(
             'Total Pengeluaran',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 4),
           Text(
@@ -284,7 +283,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                   ),
                   Text(
                     '${percent.toStringAsFixed(1)}%',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12),
                   ),
                 ],
               ),
@@ -390,7 +389,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                 maxY: maxY * 1.2,
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (group) => Colors.black87,
+                    getTooltipColor: (group) => Theme.of(context).colorScheme.surfaceContainerHighest,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       final currency = NumberFormat.currency(
                         locale: 'id_ID',
@@ -399,8 +398,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                       );
                       return BarTooltipItem(
                         currency.format(rod.toY),
-                        const TextStyle(
-                          color: Colors.white,
+                        TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontWeight: FontWeight.bold,
                         ),
                       );
@@ -423,8 +422,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                         if (value == 0) return const SizedBox.shrink();
                         return Text(
                           _compactCurrency(value),
-                          style: const TextStyle(
-                            color: Colors.grey,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                             fontSize: 10,
                           ),
                         );
@@ -436,8 +435,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
                         int index = value.toInt();
-                        if (index < 0 || index > 5)
+                        if (index < 0 || index > 5) {
                           return const SizedBox.shrink();
+                        }
                         DateTime date = DateTime(
                           startMonth.year,
                           startMonth.month + index,
@@ -447,8 +447,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
                             monthFormat.format(date),
-                            style: const TextStyle(
-                              color: Colors.grey,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -463,7 +463,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                   show: true,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (value) => FlLine(
-                    color: Colors.grey[300]!,
+                    color: Theme.of(context).colorScheme.outlineVariant,
                     strokeWidth: 1,
                     dashArray: [5, 5],
                   ),
@@ -495,7 +495,6 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

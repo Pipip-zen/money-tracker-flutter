@@ -42,7 +42,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               width: 40,
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Theme.of(context).colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -52,9 +52,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             ),
             const SizedBox(height: 8),
             ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFFE8F5E9),
-                child: Icon(Icons.table_chart, color: AppTheme.primaryGreen),
+              leading: CircleAvatar(
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                child: const Icon(Icons.table_chart, color: AppTheme.primaryGreen),
               ),
               title: const Text('Ekspor ke CSV'),
               subtitle: const Text('File spreadsheet (.csv)'),
@@ -71,9 +71,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               },
             ),
             ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: Color(0xFFFFEBEE),
-                child: Icon(Icons.picture_as_pdf, color: Colors.red),
+              leading: CircleAvatar(
+                backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                child: const Icon(Icons.picture_as_pdf, color: Colors.red),
               ),
               title: const Text('Ekspor ke PDF'),
               subtitle: const Text('Laporan bulanan (.pdf)'),
@@ -209,7 +209,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
-        backgroundColor: AppTheme.primaryGreen,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
@@ -270,15 +269,15 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                             horizontal: 16,
                             vertical: 8,
                           ),
-                          color: Colors.grey[100],
+                          color: Theme.of(context).colorScheme.surfaceContainerHigh,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 _formatDateHeader(date),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               Row(
@@ -403,7 +402,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.white,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -484,11 +482,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long, size: 80, color: Colors.grey[300]),
+          Icon(Icons.receipt_long, size: 80, color: Theme.of(context).colorScheme.surfaceContainerHigh),
           const SizedBox(height: 16),
           Text(
             'Belum ada transaksi di bulan ini',
-            style: TextStyle(color: Colors.grey[500], fontSize: 16),
+            style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 16),
           ),
         ],
       ),

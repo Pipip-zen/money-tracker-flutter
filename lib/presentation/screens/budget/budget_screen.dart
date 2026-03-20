@@ -76,12 +76,10 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         elevation: 0,
-        backgroundColor: AppTheme.primaryGreen,
       ),
       body: Column(
         children: [
           Container(
-            color: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -142,7 +140,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
@@ -208,9 +206,9 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                                           )
                                         : Text(
                                             currencyFormat.format(limit),
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
+                                              color: Theme.of(context).colorScheme.onSurface,
                                             ),
                                           ),
                                   ],
@@ -222,7 +220,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                                     child: LinearProgressIndicator(
                                       value: percent,
                                       minHeight: 8,
-                                      backgroundColor: Colors.grey[200],
+                                      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
                                       valueColor: AlwaysStoppedAnimation<Color>(
                                         _progressColor(percent),
                                       ),
@@ -237,7 +235,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                                         'Terpakai: ${currencyFormat.format(spent)}',
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey[600],
+                                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                                         ),
                                       ),
                                       Text(
@@ -400,7 +398,7 @@ class _BudgetEditSheetState extends ConsumerState<_BudgetEditSheet> {
                 height: 4,
                 width: 40,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: Theme.of(context).colorScheme.surfaceContainerHigh,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -409,7 +407,7 @@ class _BudgetEditSheetState extends ConsumerState<_BudgetEditSheet> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: Colors.grey[100],
+                  backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
                   child: Icon(
                     IconData(widget.category.icon, fontFamily: 'MaterialIcons'),
                     size: 22,

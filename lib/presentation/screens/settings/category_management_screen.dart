@@ -79,7 +79,7 @@ class CategoryManagementScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(bottom: 80),
             children: [
               _buildCategoryGroup(context, ref, 'Pemasukan', incomeCats),
-              const Divider(thickness: 4, color: Color(0xFFF0F0F0)),
+              const Divider(thickness: 4),
               _buildCategoryGroup(context, ref, 'Pengeluaran', expenseCats),
             ],
           );
@@ -100,7 +100,7 @@ class CategoryManagementScreen extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey)),
+          child: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ),
         ...items.map((cat) {
           final color = _parseColor(cat.color);
@@ -133,7 +133,7 @@ class CategoryManagementScreen extends ConsumerWidget {
                 child: Icon(IconData(cat.icon, fontFamily: 'MaterialIcons'), size: 20),
               ),
               title: Text(cat.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              trailing: const Icon(Icons.edit, size: 18, color: Colors.grey),
+              trailing: Icon(Icons.edit, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
               onTap: () => _createOrEditCategory(context, cat),
             ),
           );
@@ -288,7 +288,7 @@ class _CategoryEditSheetState extends ConsumerState<_CategoryEditSheet> {
                 Center(
                   child: Container(
                     height: 4, width: 40, margin: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                    decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
                 Text(widget.existingCategory == null ? 'Kategori Baru' : 'Edit Kategori',
@@ -361,7 +361,7 @@ class _CategoryEditSheetState extends ConsumerState<_CategoryEditSheet> {
                                     backgroundColor: isSelected ? currentColor.withValues(alpha: 0.2) : Colors.transparent,
                                     child: Icon(
                                       iconData,
-                                      color: isSelected ? currentColor : Colors.grey[600],
+                                      color: isSelected ? currentColor : Theme.of(context).colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -369,7 +369,7 @@ class _CategoryEditSheetState extends ConsumerState<_CategoryEditSheet> {
                                     label,
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: isSelected ? currentColor : Colors.grey[600],
+                                      color: isSelected ? currentColor : Theme.of(context).colorScheme.onSurfaceVariant,
                                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                     ),
                                     maxLines: 1,

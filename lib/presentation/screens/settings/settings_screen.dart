@@ -57,7 +57,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         data: Theme.of(context).copyWith(
           colorScheme: Theme.of(context).colorScheme.copyWith(
             primary: AppTheme.primaryGreen,
-            onPrimary: Colors.white,
+            onPrimary: Theme.of(context).colorScheme.onPrimary,
           ),
         ),
         child: child!,
@@ -183,10 +183,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.info_outline, color: Colors.grey),
+            leading: Icon(Icons.info_outline, color: Theme.of(context).colorScheme.onSurfaceVariant),
             title: const Text('Versi Aplikasi'),
             trailing: versionAsync.when(
-              data: (v) => Text(v, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+              data: (v) => Text(v, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant)),
               loading: () => const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
               error: (_, _) => const Text('Error'),
             ),
@@ -212,11 +212,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: const Icon(Icons.delete_forever),
               label: const Text('Reset Semua Data'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[50],
-                foregroundColor: Colors.red,
+                backgroundColor: Theme.of(context).colorScheme.errorContainer,
+                foregroundColor: Theme.of(context).colorScheme.error,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 elevation: 0,
-                side: const BorderSide(color: Colors.redAccent),
+                side: BorderSide(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.5)),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: _confirmResetData,

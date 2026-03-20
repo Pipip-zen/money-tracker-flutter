@@ -82,7 +82,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Text(
                     'Kenalan dulu sebelum mulai, yuk 👋',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
                   const SizedBox(height: 40),
@@ -135,8 +135,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       onPressed: _isFormValid ? _submit : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryGreen,
-                        disabledBackgroundColor: Colors.grey[300],
-                        disabledForegroundColor: Colors.grey[500],
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),

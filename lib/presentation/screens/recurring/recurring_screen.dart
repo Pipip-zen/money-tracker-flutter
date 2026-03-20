@@ -31,7 +31,6 @@ class RecurringScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Transaksi Rutin', style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
-        backgroundColor: AppTheme.primaryGreen,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -81,12 +80,12 @@ class RecurringScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.repeat, size: 80, color: Colors.grey[300]),
+          Icon(Icons.repeat, size: 80, color: Theme.of(context).colorScheme.surfaceContainerHigh),
           const SizedBox(height: 16),
-          Text('Belum ada transaksi rutin', style: TextStyle(color: Colors.grey[500], fontSize: 16)),
+          Text('Belum ada transaksi rutin', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 16)),
           const SizedBox(height: 8),
           Text('Tambah transaksi yang berulang\nseperti gaji atau tagihan bulanan.',
-              textAlign: TextAlign.center, style: TextStyle(color: Colors.grey[400])),
+              textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ],
       ),
     );
@@ -128,7 +127,7 @@ class _RecurringTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final db = ref.read(databaseProvider);
     final category = categories.where((c) => c.id == item.categoryId).firstOrNull;
-    final catColor = category != null ? _parseColor(category.color) : Colors.grey;
+    final catColor = category != null ? _parseColor(category.color) : Theme.of(context).colorScheme.outline;
     final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
     final dateFormat = DateFormat('dd MMM yyyy', 'id_ID');
 
@@ -165,20 +164,20 @@ class _RecurringTile extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
-          border: Border.all(color: item.isActive ? Colors.transparent : Colors.grey[200]!),
+          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
+          border: Border.all(color: item.isActive ? Colors.transparent : Theme.of(context).colorScheme.surfaceContainerHigh),
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: CircleAvatar(
             backgroundColor: catColor.withValues(alpha: item.isActive ? 0.2 : 0.07),
-            child: category != null ? Icon(IconData(category.icon, fontFamily: 'MaterialIcons'), size: 20, color: item.isActive ? null : Colors.grey) : Icon(Icons.monetization_on, size: 20, color: item.isActive ? null : Colors.grey),
+            child: category != null ? Icon(IconData(category.icon, fontFamily: 'MaterialIcons'), size: 20, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant) : Icon(Icons.monetization_on, size: 20, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           title: Row(
             children: [
-              Text(category?.name ?? 'Kategori', style: TextStyle(fontWeight: FontWeight.bold, color: item.isActive ? null : Colors.grey)),
+              Text(category?.name ?? 'Kategori', style: TextStyle(fontWeight: FontWeight.bold, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant)),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -203,7 +202,7 @@ class _RecurringTile extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 2),
-              Text('Jatuh tempo: ${dateFormat.format(item.nextDueDate)}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+              Text('Jatuh tempo: ${dateFormat.format(item.nextDueDate)}', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
             ],
           ),
           trailing: Switch(
@@ -342,7 +341,7 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
             children: [
               Center(
                 child: Container(height: 4, width: 40,
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(2))),
               ),
               const SizedBox(height: 16),
               Text(
@@ -416,7 +415,7 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
                           selectedColor: color.withValues(alpha: 0.2),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: isSelected ? color : Colors.grey[300]!),
+                            side: BorderSide(color: isSelected ? color : Theme.of(context).colorScheme.surfaceContainerHigh),
                           ),
                         ),
                       );

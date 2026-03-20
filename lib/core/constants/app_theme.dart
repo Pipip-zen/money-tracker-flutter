@@ -11,26 +11,11 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryGreen,
-        primary: primaryGreen,
-        secondary: accentGreen,
-        surface: Colors.white,
+        seedColor: const Color(0xFF1B5E20),
+        brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: lightBackground,
       appBarTheme: const AppBarTheme(
-        backgroundColor: primaryGreen,
-        foregroundColor: Colors.white,
         centerTitle: true,
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: accentGreen,
-        foregroundColor: Colors.white,
-      ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        selectedItemColor: primaryGreen,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Colors.white,
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }
@@ -39,27 +24,11 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryGreen,
+        seedColor: const Color(0xFF1B5E20),
         brightness: Brightness.dark,
-        primary: accentGreen,
-        secondary: lightGreen,
-        surface: const Color(0xFF11271D),
       ),
-      scaffoldBackgroundColor: darkBackground,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF11271D),
-        foregroundColor: Colors.white,
         centerTitle: true,
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: accentGreen,
-        foregroundColor: Colors.white,
-      ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        selectedItemColor: accentGreen,
-        unselectedItemColor: Colors.grey,
-        backgroundColor: Color(0xFF11271D),
-        type: BottomNavigationBarType.fixed,
       ),
     );
   }

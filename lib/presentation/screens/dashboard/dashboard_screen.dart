@@ -63,7 +63,7 @@ class DashboardScreen extends ConsumerWidget {
             Text(
               monthFormat.format(now),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
           ],
@@ -116,7 +116,7 @@ class DashboardScreen extends ConsumerWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            loading: () => _buildShimmerText(width: 150, height: 32),
+            loading: () => _buildShimmerText(context, width: 150, height: 32),
             error: (e, st) => const Text('Error', style: TextStyle(color: Colors.white)),
           ),
           const SizedBox(height: 24),
@@ -142,7 +142,7 @@ class DashboardScreen extends ConsumerWidget {
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      loading: () => _buildShimmerText(width: 80, height: 16),
+                      loading: () => _buildShimmerText(context, width: 80, height: 16),
                       error: (e, st) => const Text('Error', style: TextStyle(color: Colors.white)),
                     ),
                   ],
@@ -167,7 +167,7 @@ class DashboardScreen extends ConsumerWidget {
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      loading: () => _buildShimmerText(width: 80, height: 16),
+                      loading: () => _buildShimmerText(context, width: 80, height: 16),
                       error: (e, st) => const Text('Error', style: TextStyle(color: Colors.white)),
                     ),
                   ],
@@ -211,7 +211,7 @@ class DashboardScreen extends ConsumerWidget {
                 return Center(
                   child: Text(
                     'Belum ada anggaran. Atur di menu Statistik.',
-                    style: TextStyle(color: Colors.grey[500]),
+                    style: TextStyle(color: Theme.of(context).colorScheme.outline),
                   ),
                 );
               }
@@ -264,7 +264,7 @@ class DashboardScreen extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     'Belum ada transaksi.',
-                    style: TextStyle(color: Colors.grey[500]),
+                    style: TextStyle(color: Theme.of(context).colorScheme.outline),
                   ),
                 ),
               );
@@ -312,8 +312,8 @@ class DashboardScreen extends ConsumerWidget {
               child: Row(
                 children: [
                   Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
+                    baseColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                    highlightColor: Theme.of(context).colorScheme.surface,
                     child: const CircleAvatar(radius: 20),
                   ),
                   const SizedBox(width: 16),
@@ -321,13 +321,13 @@ class DashboardScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildShimmerText(width: 100, height: 14, baseColor: Colors.grey[300]!),
+                        _buildShimmerText(context, width: 100, height: 14, baseColor: Theme.of(context).colorScheme.surfaceContainerHighest),
                         const SizedBox(height: 8),
-                        _buildShimmerText(width: 150, height: 12, baseColor: Colors.grey[300]!),
+                        _buildShimmerText(context, width: 150, height: 12, baseColor: Theme.of(context).colorScheme.surfaceContainerHighest),
                       ],
                     ),
                   ),
-                  _buildShimmerText(width: 80, height: 14, baseColor: Colors.grey[300]!),
+                  _buildShimmerText(context, width: 80, height: 14, baseColor: Theme.of(context).colorScheme.surfaceContainerHighest),
                 ],
               ),
             ),
@@ -338,15 +338,16 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildShimmerText({required double width, required double height, Color? baseColor}) {
+  Widget _buildShimmerText(BuildContext context, {required double width, required double height, Color? baseColor}) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Shimmer.fromColors(
-      baseColor: baseColor ?? AppTheme.lightGreen,
-      highlightColor: baseColor != null ? Colors.grey[100]! : AppTheme.accentGreen,
+      baseColor: baseColor ?? colorScheme.surfaceContainerHighest,
+      highlightColor: colorScheme.surface,
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(4),
         ),
       ),
@@ -385,7 +386,7 @@ class _BudgetCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -435,13 +436,13 @@ class _BudgetCard extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 'dari ${currencyFormat.format(budget.limitAmount)}',
-                style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant),
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
               LinearProgressIndicator(
                 value: percent,
-                backgroundColor: Colors.grey[200],
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   isWarning ? Colors.red : AppTheme.primaryGreen,
                 ),
@@ -475,13 +476,13 @@ class _BudgetCardShimmer extends StatelessWidget {
       margin: const EdgeInsets.only(right: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
       ),
       child: Shimmer.fromColors(
-        baseColor: Colors.grey[300]!,
-        highlightColor: Colors.grey[100]!,
+        baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        highlightColor: Theme.of(context).colorScheme.surface,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -489,15 +490,15 @@ class _BudgetCardShimmer extends StatelessWidget {
               children: [
                 const CircleAvatar(radius: 16),
                 const SizedBox(width: 8),
-                Container(width: 60, height: 12, color: Colors.white),
+                Container(width: 60, height: 12, color: Theme.of(context).colorScheme.surface),
               ],
             ),
             const Spacer(),
-            Container(width: 80, height: 14, color: Colors.white),
+            Container(width: 80, height: 14, color: Theme.of(context).colorScheme.surface),
             const SizedBox(height: 4),
-            Container(width: 100, height: 10, color: Colors.white),
+            Container(width: 100, height: 10, color: Theme.of(context).colorScheme.surface),
             const SizedBox(height: 8),
-            Container(width: double.infinity, height: 4, color: Colors.white),
+            Container(width: double.infinity, height: 4, color: Theme.of(context).colorScheme.surface),
           ],
         ),
       ),
