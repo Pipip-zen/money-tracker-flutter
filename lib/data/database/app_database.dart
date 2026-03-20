@@ -56,6 +56,7 @@ class RecurringTransactions extends Table {
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+  AppDatabase.fromExecutor(super.e);
 
   @override
   int get schemaVersion => 1;

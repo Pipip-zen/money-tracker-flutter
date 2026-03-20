@@ -130,8 +130,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                     double dailyIncome = 0;
                     double dailyExpense = 0;
                     for (var tx in txList) {
-                      if (tx.type == 'income') dailyIncome += tx.amount;
-                      else dailyExpense += tx.amount;
+                      if (tx.type == 'income') {
+                        dailyIncome += tx.amount;
+                      } else {
+                        dailyExpense += tx.amount;
+                      }
                     }
 
                     return Column(

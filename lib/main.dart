@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/constants/app_theme.dart';
+import 'core/services/recurring_service.dart';
 import 'data/database/app_database.dart';
 import 'data/database/seeder.dart';
 import 'presentation/screens/main_shell.dart';
@@ -15,6 +16,7 @@ void main() async {
   GetIt.instance.registerSingleton<AppDatabase>(db);
   
   await DatabaseSeeder.seedCategories(db);
+  await initRecurringService();
 
   runApp(const ProviderScope(child: MyApp()));
 }

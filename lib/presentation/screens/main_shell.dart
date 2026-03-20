@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'transactions/transactions_screen.dart';
 import 'statistics/statistics_screen.dart';
+import 'budget/budget_screen.dart';
 import '../widgets/add_transaction_sheet.dart';
 
 class MainShell extends StatefulWidget {
@@ -18,7 +19,7 @@ class _MainShellState extends State<MainShell> {
     DashboardScreen(),
     TransactionsScreen(),
     StatisticsScreen(),
-    Center(child: Text('Settings Page')),
+    BudgetScreen(),
   ];
 
   void _onTabTapped(int index) {
@@ -80,9 +81,9 @@ class _MainShellState extends State<MainShell> {
               label: 'Statistics',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Settings',
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              activeIcon: Icon(Icons.account_balance_wallet),
+              label: 'Anggaran',
             ),
           ],
         ),
