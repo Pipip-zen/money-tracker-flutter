@@ -1,10 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_theme.dart';
 import '../../../core/services/export_service.dart';
-import '../../../core/services/recurring_service.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/transaction_providers.dart';
 import '../recurring/recurring_screen.dart';
@@ -191,18 +189,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               error: (_, _) => const Text('Error'),
             ),
           ),
-          if (kDebugMode)
-            ListTile(
-              leading: const Icon(Icons.bug_report, color: Colors.orange),
-              title: const Text('[DEV] Trigger Recurring'),
-              onTap: () async {
-                await RecurringService().runCheck();
-                if (!context.mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recurring check triggered')),
-                );
-              },
-            ),
           const SizedBox(height: 32),
 
           // DANGER ZONE
