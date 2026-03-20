@@ -2,23 +2,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/transaction_entity.dart';
 import 'transaction_providers.dart';
 
-final combinedMonthlyTotalProvider = FutureProvider.family<({double income, double expense}), ({int month, int year})>((ref, param) async {
-  final income = await ref.watch(monthlyTotalProvider((type: 'income', month: param.month, year: param.year)).future);
-  final expense = await ref.watch(monthlyTotalProvider((type: 'expense', month: param.month, year: param.year)).future);
-  return (income: income, expense: expense);
+final combinedMonthlyTotalProvider = Provider.family<AsyncValue<({double income, double expense})>, ({int month, int year})>((ref, param) {
+  final txsAsync = ref.watch(transactionsStreamProvider);
+  return txsAsync.whenData((txs) {
+    double income = 0;
+    double expense = 0;
+    for (final t in txs) {
+      if (t.date.month == param.month && t.date.year == param.year) {
+        if (t.type == 'income') {
+          income += t.amount;
+        } else if (t.type == 'expense') {
+          expense += t.amount;
+        }
+      }
+    }
+    return (income: income, expense: expense);
+  });
 });
 
-final currentBalanceProvider = FutureProvider<double>((ref) async {
-  final txs = await ref.watch(transactionsStreamProvider.future);
-  double balance = 0.0;
-  for (final t in txs) {
-    if (t.type == 'income') {
-      balance += t.amount;
-    } else if (t.type == 'expense') {
-      balance -= t.amount;
+final currentBalanceProvider = Provider<AsyncValue<double>>((ref) {
+  final txsAsync = ref.watch(transactionsStreamProvider);
+  return txsAsync.whenData((txs) {
+    double balance = 0.0;
+    for (final t in txs) {
+      if (t.type == 'income') {
+        balance += t.amount;
+      } else if (t.type == 'expense') {
+        balance -= t.amount;
+      }
     }
-  }
-  return balance;
+    return balance;
+  });
 });
 
 final recentTransactionsProvider = Provider<AsyncValue<List<TransactionEntity>>>((ref) {

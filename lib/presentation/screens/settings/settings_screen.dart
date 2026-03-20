@@ -22,7 +22,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final lastDay = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 
     try {
-      final txs = await ref.read(transactionsByDateRangeProvider((from: firstDay, to: lastDay)).future);
+      final allTxs = await ref.read(transactionsStreamProvider.future);
+      final txs = allTxs.where((t) {
+        return t.date.isAfter(firstDay.subtract(const Duration(seconds: 1))) &&
+               t.date.isBefore(lastDay.add(const Duration(seconds: 1)));
+      }).toList();
       if (txs.isEmpty && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak ada data bulan ini')));
         return;
@@ -61,7 +65,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (range != null && mounted) {
       final endDay = DateTime(range.end.year, range.end.month, range.end.day, 23, 59, 59);
       try {
-        final txs = await ref.read(transactionsByDateRangeProvider((from: range.start, to: endDay)).future);
+        final allTxs = await ref.read(transactionsStreamProvider.future);
+        final txs = allTxs.where((t) {
+          return t.date.isAfter(range.start.subtract(const Duration(seconds: 1))) &&
+                 t.date.isBefore(endDay.add(const Duration(seconds: 1)));
+        }).toList();
         if (txs.isEmpty && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak ada data di rentang waktu ini')));
           return;

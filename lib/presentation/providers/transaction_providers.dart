@@ -7,12 +7,24 @@ final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((ref)
   return ref.watch(transactionRepositoryProvider).watchAllTransactions();
 });
 
-final transactionsByDateRangeProvider = FutureProvider.family<List<TransactionEntity>, ({DateTime from, DateTime to})>((ref, param) {
-  return ref.watch(transactionRepositoryProvider).getTransactionsByDateRange(param.from, param.to);
+final transactionsByDateRangeProvider = Provider.family<AsyncValue<List<TransactionEntity>>, ({DateTime from, DateTime to})>((ref, param) {
+  final asyncTxs = ref.watch(transactionsStreamProvider);
+  return asyncTxs.whenData((txs) {
+    return txs.where((t) {
+      final isAfterOrSame = t.date.isAfter(param.from.subtract(const Duration(seconds: 1)));
+      final isBeforeOrSame = t.date.isBefore(param.to.add(const Duration(seconds: 1)));
+      return isAfterOrSame && isBeforeOrSame;
+    }).toList()..sort((a, b) => b.date.compareTo(a.date));
+  });
 });
 
-final monthlyTotalProvider = FutureProvider.family<double, ({String type, int month, int year})>((ref, param) {
-  return ref.watch(transactionRepositoryProvider).getTotalByType(param.type, param.month, param.year);
+final monthlyTotalProvider = Provider.family<AsyncValue<double>, ({String type, int month, int year})>((ref, param) {
+  final asyncTxs = ref.watch(transactionsStreamProvider);
+  return asyncTxs.whenData((txs) {
+    return txs
+        .where((t) => t.type == param.type && t.date.month == param.month && t.date.year == param.year)
+        .fold(0.0, (sum, t) => sum + t.amount);
+  });
 });
 
 class TransactionNotifier extends AsyncNotifier<void> {

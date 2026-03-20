@@ -213,20 +213,27 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                     ),
                     const SizedBox(height: 24),
 
-                    TextField(
-                      controller: _amountController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        CurrencyInputFormatter(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Rp ', style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+                        IntrinsicWidth(
+                          child: TextFormField(
+                            controller: _amountController,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: false),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              CurrencyInputFormatter(),
+                            ],
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              hintText: '0',
+                            ),
+                          ),
+                        ),
                       ],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-                      decoration: const InputDecoration(
-                        prefixText: 'Rp ',
-                        border: InputBorder.none,
-                        hintText: '0',
-                      ),
                     ),
                     const SizedBox(height: 24),
 
@@ -251,8 +258,15 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                       ),
                       maxLines: 2,
                     ),
-                    const SizedBox(height: 40),
-
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+              // Fixed Bottom Section
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+                child: Column(
+                  children: [
                     SizedBox(
                       width: double.infinity,
                       height: 56,
@@ -276,7 +290,6 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                         child: const Text('Batalkan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
-                    SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 24),
                   ],
                 ),
               ),

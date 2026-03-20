@@ -14,10 +14,10 @@ import 'presentation/screens/onboarding/onboarding_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
-  
+
   final db = AppDatabase();
   GetIt.instance.registerSingleton<AppDatabase>(db);
-  
+
   await DatabaseSeeder.seedCategories(db);
   await initRecurringService();
 
@@ -31,7 +31,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final onboardingAsync = ref.watch(onboardingStatusProvider);
-    
+
     return MaterialApp(
       title: 'Money Tracker',
       theme: AppTheme.lightTheme,
@@ -39,8 +39,9 @@ class MyApp extends ConsumerWidget {
       themeMode: themeMode,
       home: onboardingAsync.when(
         data: (isDone) => isDone ? const MainShell() : const OnboardingScreen(),
-        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-        error: (_, __) => const MainShell(),
+        loading: () =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (_, _) => const MainShell(),
       ),
     );
   }
