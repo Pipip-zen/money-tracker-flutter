@@ -140,28 +140,33 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   }
 
   void _deleteTransaction(TransactionEntity tx) async {
-    final messenger = ScaffoldMessenger.of(context);
+    final snapshot = tx;
     try {
-      await ref.read(addTransactionProvider.notifier).deleteTransaction(tx.id);
+      await ref.read(addTransactionProvider.notifier).deleteTransaction(snapshot.id);
+      
       if (mounted) {
-        messenger.showSnackBar(
-          SnackBar(
-            content: const Text('Transaksi dihapus'),
-            action: SnackBarAction(
-              label: 'Batal',
-              textColor: AppTheme.accentGreen,
-              onPressed: () async {
-                await ref
-                    .read(addTransactionProvider.notifier)
-                    .addTransaction(tx);
-              },
+        ScaffoldMessenger.of(context)
+          ..clearSnackBars()
+          ..showSnackBar(
+            SnackBar(
+              content: const Text('Transaksi dihapus'),
+              duration: const Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+              action: SnackBarAction(
+                label: 'Undo',
+                textColor: AppTheme.accentGreen,
+                onPressed: () async {
+                  await ref
+                      .read(addTransactionProvider.notifier)
+                      .addTransaction(snapshot.copyWith(id: 0));
+                },
+              ),
             ),
-          ),
-        );
+          );
       }
     } catch (e) {
       if (mounted) {
-        messenger.showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Gagal menghapus')),
         );
       }

@@ -20,4 +20,28 @@ class TransactionEntity {
     required this.categoryIcon,
     required this.categoryColor,
   });
+
+  TransactionEntity copyWith({
+    int? id,
+    double? amount,
+    String? note,
+    DateTime? date,
+    String? type,
+    int? categoryId,
+    String? categoryName,
+    int? categoryIcon,
+    String? categoryColor,
+  }) {
+    return TransactionEntity(
+      id: id ?? this.id,
+      amount: amount ?? this.amount,
+      note: note ?? this.note,
+      date: date ?? this.date,
+      type: type ?? this.type,
+      categoryId: categoryId ?? this.categoryId,
+      categoryName: categoryName ?? this.categoryName,
+      categoryIcon: categoryIcon ?? this.categoryIcon,
+      categoryColor: categoryColor ?? this.categoryColor,
+    );
+  }
 }

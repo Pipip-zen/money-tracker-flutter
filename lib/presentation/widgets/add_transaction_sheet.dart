@@ -121,31 +121,6 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
     }
   }
 
-  void _delete() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Hapus Transaksi'),
-        content: const Text('Hapus transaksi ini?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              if (widget.existingTransaction != null) {
-                await ref.read(addTransactionProvider.notifier).deleteTransaction(widget.existingTransaction!.id);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transaksi dihapus')));
-                  Navigator.pop(context);
-                }
-              }
-            },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -183,14 +158,6 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                           style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                         ),
-                        if (widget.existingTransaction != null)
-                          Positioned(
-                            right: 0,
-                            child: IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red),
-                              onPressed: _delete,
-                            ),
-                          ),
                       ],
                     ),
                     const SizedBox(height: 24),

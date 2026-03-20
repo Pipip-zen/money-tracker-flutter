@@ -12,6 +12,8 @@ import 'presentation/providers/user_provider.dart';
 import 'presentation/screens/main_shell.dart';
 import 'presentation/screens/onboarding/onboarding_screen.dart';
 
+final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, _) async {
@@ -51,6 +53,7 @@ class MyApp extends ConsumerWidget {
     final onboardingAsync = ref.watch(onboardingStatusProvider);
 
     return MaterialApp(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'Money Tracker',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

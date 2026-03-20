@@ -70,17 +70,17 @@ class _MainShellState extends ConsumerState<MainShell> {
             BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded),
               activeIcon: Icon(Icons.home_rounded),
-              label: 'Dashboard',
+              label: 'Beranda',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.receipt_long_rounded),
               activeIcon: Icon(Icons.receipt_long_rounded),
-              label: 'Transactions',
+              label: 'Transaksi',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.bar_chart_rounded),
               activeIcon: Icon(Icons.bar_chart_rounded),
-              label: 'Statistics',
+              label: 'Statistik',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_rounded),
