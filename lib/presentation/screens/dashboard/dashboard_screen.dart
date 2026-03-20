@@ -11,6 +11,7 @@ import '../../providers/user_provider.dart';
 import '../../../domain/entities/budget_entity.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../main_shell.dart';
+import '../budget/budget_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -180,7 +181,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildBudgetSection(BuildContext context, WidgetRef ref, DateTime now) {
-    final budgetsAsync = ref.watch(budgetsProvider((month: now.month, year: now.year)));
+    final budgetsAsync = ref.watch(budgetsProvider(BudgetFilter(month: now.month, year: now.year)));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,6 +190,16 @@ class DashboardScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Anggaran Bulan Ini', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            budgetsAsync.when(
+              data: (budgets) => TextButton(
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()));
+                },
+                child: Text(budgets.isEmpty ? 'Kelola Anggaran' : 'Lihat Semua'),
+              ),
+              loading: () => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
+            ),
           ],
         ),
         const SizedBox(height: 8),

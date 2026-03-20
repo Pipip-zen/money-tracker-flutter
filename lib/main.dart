@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:workmanager/workmanager.dart';
 import 'core/constants/app_theme.dart';
 import 'core/services/recurring_service.dart';
 import 'data/database/app_database.dart';
@@ -11,6 +12,16 @@ import 'presentation/providers/user_provider.dart';
 import 'presentation/screens/main_shell.dart';
 import 'presentation/screens/onboarding/onboarding_screen.dart';
 
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, _) async {
+    if (task == 'checkRecurringTransactions') {
+      await RecurringService().runCheck();
+    }
+    return true;
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
@@ -19,7 +30,14 @@ void main() async {
   GetIt.instance.registerSingleton<AppDatabase>(db);
 
   await DatabaseSeeder.seedCategories(db);
-  await initRecurringService();
+  
+  await Workmanager().initialize(callbackDispatcher);
+  await Workmanager().registerPeriodicTask(
+    'recurring_check',
+    'checkRecurringTransactions',
+    frequency: const Duration(hours: 24),
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+  );
 
   runApp(const ProviderScope(child: MyApp()));
 }

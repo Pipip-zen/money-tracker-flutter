@@ -63,9 +63,9 @@ class MonthlyComparisonCard extends ConsumerWidget {
                             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                             child: Row(
                               children: [
-                                const Expanded(flex: 2, child: SizedBox()),
+                                const Expanded(flex: 5, child: SizedBox()),
                                 Expanded(
-                                  flex: 3,
+                                  flex: 4,
                                   child: Text(
                                     monthFormat.format(prev),
                                     textAlign: TextAlign.center,
@@ -73,14 +73,14 @@ class MonthlyComparisonCard extends ConsumerWidget {
                                   ),
                                 ),
                                 Expanded(
-                                  flex: 3,
+                                  flex: 4,
                                   child: Text(
                                     monthFormat.format(currentMonth),
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryGreen, fontSize: 13),
                                   ),
                                 ),
-                                const Expanded(flex: 2, child: SizedBox()),
+                                const Expanded(flex: 3, child: SizedBox()),
                               ],
                             ),
                           ),
@@ -147,12 +147,12 @@ class _ComparisonRow extends StatelessWidget {
         children: [
           // Label
           Expanded(
-            flex: 2,
+            flex: 5,
             child: Text(label, style: TextStyle(fontSize: fontSize, fontWeight: fontWeight, color: Colors.grey[700])),
           ),
           // Previous month value
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Text(
               currency.format(previous),
               textAlign: TextAlign.center,
@@ -161,7 +161,7 @@ class _ComparisonRow extends StatelessWidget {
           ),
           // Current month value
           Expanded(
-            flex: 3,
+            flex: 4,
             child: Text(
               currency.format(current),
               textAlign: TextAlign.center,
@@ -170,7 +170,7 @@ class _ComparisonRow extends StatelessWidget {
           ),
           // Delta indicator
           Expanded(
-            flex: 2,
+            flex: 3,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,

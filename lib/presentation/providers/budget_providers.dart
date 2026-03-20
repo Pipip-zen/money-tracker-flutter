@@ -3,8 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/budget_entity.dart';
 import 'repository_providers.dart';
 
-final budgetsProvider = StreamProvider.family<List<BudgetEntity>, ({int month, int year})>((ref, param) {
-  return ref.watch(budgetRepositoryProvider).watchBudgetsByMonth(param.month, param.year);
+class BudgetFilter {
+  final int month;
+  final int year;
+
+  const BudgetFilter({required this.month, required this.year});
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BudgetFilter &&
+          runtimeType == other.runtimeType &&
+          month == other.month &&
+          year == other.year;
+
+  @override
+  int get hashCode => month.hashCode ^ year.hashCode;
+}
+
+final budgetsProvider = StreamProvider.family<List<BudgetEntity>, BudgetFilter>((ref, filter) {
+  return ref.watch(budgetRepositoryProvider).watchBudgetsByMonth(filter.month, filter.year);
 });
 
 class BudgetNotifier extends AsyncNotifier<void> {

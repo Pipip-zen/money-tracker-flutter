@@ -65,7 +65,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
   Widget build(BuildContext context) {
     final monthFormat = DateFormat('MMMM yyyy', 'id_ID');
     final budgetsAsync = ref.watch(
-      budgetsProvider((month: _currentMonth.month, year: _currentMonth.year)),
+      budgetsProvider(BudgetFilter(month: _currentMonth.month, year: _currentMonth.year)),
     );
     final categoriesAsync = ref.watch(categoriesByTypeProvider('expense'));
 
