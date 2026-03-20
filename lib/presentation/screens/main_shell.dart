@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'transactions/transactions_screen.dart';
+import 'statistics/statistics_screen.dart';
 import '../widgets/add_transaction_sheet.dart';
 
 class MainShell extends StatefulWidget {
@@ -16,7 +17,7 @@ class _MainShellState extends State<MainShell> {
   final List<Widget> _pages = const [
     DashboardScreen(),
     TransactionsScreen(),
-    Center(child: Text('Statistics Page')),
+    StatisticsScreen(),
     Center(child: Text('Settings Page')),
   ];
 
