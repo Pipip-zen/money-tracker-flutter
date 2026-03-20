@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dashboard/dashboard_screen.dart';
+import 'transactions/transactions_screen.dart';
+import '../widgets/add_transaction_sheet.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -13,7 +15,7 @@ class _MainShellState extends State<MainShell> {
 
   final List<Widget> _pages = const [
     DashboardScreen(),
-    Center(child: Text('Transactions Page')),
+    TransactionsScreen(),
     Center(child: Text('Statistics Page')),
     Center(child: Text('Settings Page')),
   ];
@@ -28,19 +30,9 @@ class _MainShellState extends State<MainShell> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-            left: 16,
-            right: 16,
-            top: 24,
-          ),
-          child: const SizedBox(
-            height: 400,
-            child: Center(child: Text('Add Transaction Bottom Sheet Placeholder')),
-          ),
-        );
+        return const AddTransactionBottomSheet();
       },
     );
   }
