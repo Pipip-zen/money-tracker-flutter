@@ -9,6 +9,7 @@ import '../../../domain/entities/category_entity.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../providers/category_providers.dart';
 import '../providers/transaction_providers.dart';
+import '../../core/utils/icon_utils.dart';
 
 class AddTransactionBottomSheet extends ConsumerStatefulWidget {
   final TransactionEntity? existingTransaction;
@@ -322,7 +323,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                   label: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(IconData(cat.icon, fontFamily: 'MaterialIcons'), size: 18),
+                      Icon(IconUtils.getIcon(cat.icon), size: 18),
                       const SizedBox(width: 8),
                       Text(cat.name),
                     ],

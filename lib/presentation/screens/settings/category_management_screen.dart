@@ -7,6 +7,7 @@ import '../../../data/database/app_database.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../../providers/category_providers.dart';
 import '../../providers/database_provider.dart';
+import '../../../core/utils/icon_utils.dart';
 
 class CategoryManagementScreen extends ConsumerWidget {
   const CategoryManagementScreen({super.key});
@@ -130,7 +131,7 @@ class CategoryManagementScreen extends ConsumerWidget {
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: color.withValues(alpha: 0.2),
-                child: Icon(IconData(cat.icon, fontFamily: 'MaterialIcons'), size: 20),
+                child: Icon(IconUtils.getIcon(cat.icon), size: 20),
               ),
               title: Text(cat.name, style: const TextStyle(fontWeight: FontWeight.bold)),
               trailing: Icon(Icons.edit, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),

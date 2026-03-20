@@ -8,6 +8,7 @@ import '../../../domain/entities/budget_entity.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../../providers/budget_providers.dart';
 import '../../providers/category_providers.dart';
+import '../../../core/utils/icon_utils.dart';
 
 class BudgetScreen extends ConsumerStatefulWidget {
   const BudgetScreen({super.key});
@@ -165,7 +166,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                                             alpha: 0.2,
                                           ),
                                           child: Icon(
-                                            IconData(cat.icon, fontFamily: 'MaterialIcons'),
+                                            IconUtils.getIcon(cat.icon),
                                             size: 18,
                                           ),
                                         ),
@@ -409,7 +410,7 @@ class _BudgetEditSheetState extends ConsumerState<_BudgetEditSheet> {
                 CircleAvatar(
                   backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
                   child: Icon(
-                    IconData(widget.category.icon, fontFamily: 'MaterialIcons'),
+                    IconUtils.getIcon(widget.category.icon),
                     size: 22,
                   ),
                 ),

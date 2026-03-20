@@ -8,6 +8,7 @@ import '../../../domain/entities/transaction_entity.dart';
 import '../../providers/transaction_providers.dart';
 import '../../widgets/monthly_comparison_card.dart';
 import '../budget/budget_screen.dart';
+import '../../../core/utils/icon_utils.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -266,7 +267,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               leading: CircleAvatar(
                 backgroundColor: color.withValues(alpha: 0.2),
                 child: Icon(
-                  IconData(tx.categoryIcon, fontFamily: 'MaterialIcons'),
+                  IconUtils.getIcon(tx.categoryIcon),
                 ),
               ),
               title: Text(

@@ -9,6 +9,7 @@ import '../../../domain/entities/category_entity.dart';
 import '../../../data/database/app_database.dart';
 import '../../../presentation/providers/category_providers.dart';
 import '../../../presentation/providers/database_provider.dart';
+import '../../../core/utils/icon_utils.dart';
 
 // --------------- PROVIDERS ---------------
 
@@ -173,7 +174,7 @@ class _RecurringTile extends ConsumerWidget {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: CircleAvatar(
             backgroundColor: catColor.withValues(alpha: item.isActive ? 0.2 : 0.07),
-            child: category != null ? Icon(IconData(category.icon, fontFamily: 'MaterialIcons'), size: 20, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant) : Icon(Icons.monetization_on, size: 20, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant),
+            child: category != null ? Icon(IconUtils.getIcon(category.icon), size: 20, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant) : Icon(Icons.monetization_on, size: 20, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           title: Row(
             children: [
@@ -409,7 +410,7 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
-                          label: Row(mainAxisSize: MainAxisSize.min, children: [Icon(IconData(cat.icon, fontFamily: 'MaterialIcons'), size: 18), const SizedBox(width: 6), Text(cat.name)]),
+                          label: Row(mainAxisSize: MainAxisSize.min, children: [Icon(IconUtils.getIcon(cat.icon), size: 18), const SizedBox(width: 6), Text(cat.name)]),
                           selected: isSelected,
                           onSelected: (_) => setState(() => _selectedCategory = cat),
                           selectedColor: color.withValues(alpha: 0.2),

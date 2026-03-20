@@ -12,6 +12,7 @@ import '../../../domain/entities/budget_entity.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../main_shell.dart';
 import '../budget/budget_screen.dart';
+import '../../../core/utils/icon_utils.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -283,7 +284,7 @@ class DashboardScreen extends ConsumerWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: CircleAvatar(
                     backgroundColor: color.withValues(alpha: 0.2),
-                    child: Icon(IconData(tx.categoryIcon, fontFamily: 'MaterialIcons'), size: 20),
+                    child: Icon(IconUtils.getIcon(tx.categoryIcon), size: 20),
                   ),
                   title: Text(tx.categoryName, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(
@@ -411,7 +412,7 @@ class _BudgetCard extends ConsumerWidget {
                   CircleAvatar(
                     radius: 16,
                     backgroundColor: catColor.withValues(alpha: 0.2),
-                    child: Icon(IconData(category.icon, fontFamily: 'MaterialIcons'), size: 16),
+                    child: Icon(IconUtils.getIcon(category.icon), size: 16),
                   ),
                   const SizedBox(width: 8),
                   Expanded(

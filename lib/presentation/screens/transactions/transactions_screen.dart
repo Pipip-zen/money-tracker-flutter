@@ -9,6 +9,7 @@ import '../../../domain/entities/category_entity.dart';
 import '../../providers/category_providers.dart';
 import '../../providers/transaction_providers.dart';
 import '../../widgets/add_transaction_sheet.dart';
+import '../../../core/utils/icon_utils.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
@@ -358,7 +359,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                               leading: CircleAvatar(
                                 backgroundColor: color.withValues(alpha: 0.2),
                                 child: Icon(
-                                  IconData(tx.categoryIcon, fontFamily: 'MaterialIcons'),
+                                  IconUtils.getIcon(tx.categoryIcon),
                                   size: 20,
                                 ),
                               ),
@@ -448,7 +449,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(IconData(cat.icon, fontFamily: 'MaterialIcons'), size: 18),
+                            Icon(IconUtils.getIcon(cat.icon), size: 18),
                             const SizedBox(width: 8),
                             SizedBox(
                               width: 60, // Limit width to prevent overflow
