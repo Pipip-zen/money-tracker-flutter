@@ -353,9 +353,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                             child: ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: color.withValues(alpha: 0.2),
-                                child: Text(
-                                  tx.categoryIcon,
-                                  style: const TextStyle(fontSize: 20),
+                                child: Icon(
+                                  IconData(tx.categoryIcon, fontFamily: 'MaterialIcons'),
+                                  size: 20,
                                 ),
                               ),
                               title: Text(
@@ -445,7 +445,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(cat.icon),
+                            Icon(IconData(cat.icon, fontFamily: 'MaterialIcons'), size: 18),
                             const SizedBox(width: 8),
                             SizedBox(
                               width: 60, // Limit width to prevent overflow

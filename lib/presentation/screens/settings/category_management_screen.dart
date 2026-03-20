@@ -130,7 +130,7 @@ class CategoryManagementScreen extends ConsumerWidget {
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: color.withValues(alpha: 0.2),
-                child: Text(cat.icon, style: const TextStyle(fontSize: 20)),
+                child: Icon(IconData(cat.icon, fontFamily: 'MaterialIcons'), size: 20),
               ),
               title: Text(cat.name, style: const TextStyle(fontWeight: FontWeight.bold)),
               trailing: const Icon(Icons.edit, size: 18, color: Colors.grey),
@@ -154,7 +154,7 @@ class _CategoryEditSheet extends ConsumerStatefulWidget {
 
 class _CategoryEditSheetState extends ConsumerState<_CategoryEditSheet> {
   late TextEditingController _nameCtrl;
-  late TextEditingController _iconCtrl;
+  int _selectedIconCode = 0xe532; // Icons.restaurant.codePoint fallback
   String _type = 'expense';
   String _colorHex = 'FF1B4332'; // Default primary Green
 
@@ -166,11 +166,62 @@ class _CategoryEditSheetState extends ConsumerState<_CategoryEditSheet> {
     'FFFB8C00', 'FFF4511E', 'FF6D4C41', // Orange, DeepOrange, Brown
   ];
 
+  static const List<Map<String, dynamic>> kCategoryIcons = [
+    // Food & Daily
+    {'icon': Icons.restaurant, 'label': 'Makan'},
+    {'icon': Icons.local_cafe, 'label': 'Kafe'},
+    {'icon': Icons.local_grocery_store, 'label': 'Belanja'},
+    {'icon': Icons.shopping_bag, 'label': 'Shopping'},
+    {'icon': Icons.shopping_cart, 'label': 'Keranjang'},
+
+    // Transport
+    {'icon': Icons.directions_car, 'label': 'Mobil'},
+    {'icon': Icons.directions_bus, 'label': 'Bus'},
+    {'icon': Icons.local_gas_station, 'label': 'BBM'},
+    {'icon': Icons.flight, 'label': 'Pesawat'},
+    {'icon': Icons.train, 'label': 'Kereta'},
+    {'icon': Icons.motorcycle, 'label': 'Motor'},
+
+    // Finance & Income
+    {'icon': Icons.account_balance_wallet, 'label': 'Dompet'},
+    {'icon': Icons.savings, 'label': 'Tabungan'},
+    {'icon': Icons.trending_up, 'label': 'Investasi'},
+    {'icon': Icons.attach_money, 'label': 'Uang'},
+    {'icon': Icons.credit_card, 'label': 'Kartu'},
+    {'icon': Icons.receipt_long, 'label': 'Tagihan'},
+    {'icon': Icons.payment, 'label': 'Pembayaran'},
+    {'icon': Icons.account_balance, 'label': 'Bank'},
+    {'icon': Icons.currency_exchange, 'label': 'Kurs'},
+    {'icon': Icons.monetization_on, 'label': 'Penghasilan'},
+    {'icon': Icons.business_center, 'label': 'Bisnis'},
+    {'icon': Icons.work, 'label': 'Kerja'},
+    {'icon': Icons.laptop, 'label': 'Freelance'},
+
+    // Lifestyle
+    {'icon': Icons.sports_esports, 'label': 'Gaming'},
+    {'icon': Icons.movie, 'label': 'Hiburan'},
+    {'icon': Icons.music_note, 'label': 'Musik'},
+    {'icon': Icons.fitness_center, 'label': 'Gym'},
+    {'icon': Icons.local_hospital, 'label': 'Kesehatan'},
+    {'icon': Icons.school, 'label': 'Pendidikan'},
+    {'icon': Icons.book, 'label': 'Buku'},
+    {'icon': Icons.home, 'label': 'Rumah'},
+    {'icon': Icons.electrical_services, 'label': 'Listrik'},
+    {'icon': Icons.wifi, 'label': 'Internet'},
+    {'icon': Icons.phone_android, 'label': 'Pulsa'},
+    {'icon': Icons.child_care, 'label': 'Anak'},
+    {'icon': Icons.pets, 'label': 'Hewan'},
+    {'icon': Icons.celebration, 'label': 'Hiburan'},
+    {'icon': Icons.card_giftcard, 'label': 'Hadiah'},
+    {'icon': Icons.volunteer_activism, 'label': 'Donasi'},
+    {'icon': Icons.more_horiz, 'label': 'Lainnya'},
+  ];
+
   @override
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.existingCategory?.name ?? '');
-    _iconCtrl = TextEditingController(text: widget.existingCategory?.icon ?? '💰');
+    _selectedIconCode = widget.existingCategory?.icon ?? Icons.restaurant.codePoint;
     if (widget.existingCategory != null) {
       _type = widget.existingCategory!.type;
       _colorHex = widget.existingCategory!.color.replaceAll('#', '');
@@ -181,16 +232,14 @@ class _CategoryEditSheetState extends ConsumerState<_CategoryEditSheet> {
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _iconCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
     final name = _nameCtrl.text.trim();
-    final icon = _iconCtrl.text.trim();
 
-    if (name.isEmpty || icon.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nama dan Ikon wajib diisi')));
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nama Kategori wajib diisi')));
       return;
     }
 
@@ -198,7 +247,7 @@ class _CategoryEditSheetState extends ConsumerState<_CategoryEditSheet> {
     final comp = CategoriesCompanion(
       id: widget.existingCategory != null ? drift.Value(widget.existingCategory!.id) : const drift.Value.absent(),
       name: drift.Value(name),
-      icon: drift.Value(icon),
+      icon: drift.Value(_selectedIconCode),
       color: drift.Value('#$_colorHex'),
       type: drift.Value(_type),
     );
@@ -220,106 +269,162 @@ class _CategoryEditSheetState extends ConsumerState<_CategoryEditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                height: 4, width: 40,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
-              ),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, scrollController) {
+          final currentColor = Color(int.parse(_colorHex, radix: 16));
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            const SizedBox(height: 20),
-            Text(widget.existingCategory == null ? 'Kategori Baru' : 'Edit Kategori',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            
-            // Type Segmented Button
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(value: 'income', label: Text('Pemasukan')),
-                ButtonSegment(value: 'expense', label: Text('Pengeluaran')),
-              ],
-              selected: {_type},
-              onSelectionChanged: (Set<String> newSelection) {
-                setState(() => _type = newSelection.first);
-              },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return _type == 'income' ? AppTheme.accentGreen.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2);
-                  }
-                  return Colors.transparent;
-                }),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            Row(
+            padding: const EdgeInsets.all(24),
+            child: Column(
               children: [
-                SizedBox(
-                  width: 60,
-                  child: TextField(
-                    controller: _iconCtrl,
-                    textAlign: TextAlign.center,
-                    decoration: const InputDecoration(labelText: 'Ikon', border: OutlineInputBorder()),
-                    style: const TextStyle(fontSize: 24),
+                Center(
+                  child: Container(
+                    height: 4, width: 40, margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
                   ),
                 ),
-                const SizedBox(width: 16),
+                Text(widget.existingCategory == null ? 'Kategori Baru' : 'Edit Kategori',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
                 Expanded(
-                  child: TextField(
-                    controller: _nameCtrl,
-                    decoration: const InputDecoration(labelText: 'Nama Kategori', border: OutlineInputBorder()),
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Type Segmented Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: SegmentedButton<String>(
+                            segments: const [
+                              ButtonSegment(value: 'expense', label: Text('Pengeluaran')),
+                              ButtonSegment(value: 'income', label: Text('Pemasukan')),
+                            ],
+                            selected: {_type},
+                            onSelectionChanged: (Set<String> newSelection) {
+                              setState(() => _type = newSelection.first);
+                            },
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+                                if (states.contains(WidgetState.selected)) {
+                                  return _type == 'income' ? AppTheme.accentGreen.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2);
+                                }
+                                return Colors.transparent;
+                              }),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        
+                        TextField(
+                          controller: _nameCtrl,
+                          decoration: const InputDecoration(labelText: 'Nama Kategori', border: OutlineInputBorder()),
+                        ),
+                        const SizedBox(height: 24),
+
+                        const Text('Pilih Ikon', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 5,
+                            childAspectRatio: 0.85,
+                            crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
+                          ),
+                          itemCount: kCategoryIcons.length,
+                          itemBuilder: (context, index) {
+                            final iconData = kCategoryIcons[index]['icon'] as IconData;
+                            final label = kCategoryIcons[index]['label'] as String;
+                            final isSelected = iconData.codePoint == _selectedIconCode;
+                            
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedIconCode = iconData.codePoint;
+                                });
+                              },
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: isSelected ? currentColor.withValues(alpha: 0.2) : Colors.transparent,
+                                    child: Icon(
+                                      iconData,
+                                      color: isSelected ? currentColor : Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    label,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: isSelected ? currentColor : Colors.grey[600],
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        
+                        const SizedBox(height: 24),
+                        const Text('Pilih Warna', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: _colorOptions.map((hex) {
+                            final isSelected = hex == _colorHex;
+                            final color = Color(int.parse(hex, radix: 16));
+                            return GestureDetector(
+                              onTap: () => setState(() => _colorHex = hex),
+                              child: CircleAvatar(
+                                backgroundColor: color,
+                                radius: 20,
+                                child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 20) : null,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGreen,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Simpan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            const Text('Pilih Warna', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: _colorOptions.map((hex) {
-                final isSelected = hex == _colorHex;
-                final color = Color(int.parse(hex, radix: 16));
-                return GestureDetector(
-                  onTap: () => setState(() => _colorHex = hex),
-                  child: CircleAvatar(
-                    backgroundColor: color,
-                    radius: 20,
-                    child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 20) : null,
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Simpan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

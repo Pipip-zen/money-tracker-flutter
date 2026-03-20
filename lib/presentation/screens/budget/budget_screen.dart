@@ -166,11 +166,9 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
                                           backgroundColor: catColor.withValues(
                                             alpha: 0.2,
                                           ),
-                                          child: Text(
-                                            cat.icon,
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                            ),
+                                          child: Icon(
+                                            IconData(cat.icon, fontFamily: 'MaterialIcons'),
+                                            size: 18,
                                           ),
                                         ),
                                         const SizedBox(width: 12),
@@ -412,9 +410,9 @@ class _BudgetEditSheetState extends ConsumerState<_BudgetEditSheet> {
               children: [
                 CircleAvatar(
                   backgroundColor: Colors.grey[100],
-                  child: Text(
-                    widget.category.icon,
-                    style: const TextStyle(fontSize: 22),
+                  child: Icon(
+                    IconData(widget.category.icon, fontFamily: 'MaterialIcons'),
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 12),

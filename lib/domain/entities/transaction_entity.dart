@@ -6,7 +6,7 @@ class TransactionEntity {
   final String type;
   final int categoryId;
   final String categoryName;
-  final String categoryIcon;
+  final int categoryIcon;
   final String categoryColor;
 
   const TransactionEntity({

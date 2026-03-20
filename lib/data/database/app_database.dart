@@ -17,7 +17,7 @@ part 'app_database.g.dart';
 class Categories extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(max: 50)();
-  TextColumn get icon => text()();
+  IntColumn get icon => integer()();
   TextColumn get color => text()();
   TextColumn get type => text()(); // 'income' or 'expense'
 }
@@ -59,7 +59,34 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.fromExecutor(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onCreate: (Migrator m) async {
+        await m.createAll();
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
+        if (from < 2) {
+          // Because 'icon' was changed from String to int, we recreate tables 
+          // to clear old text data and fix FormatException parsing errors.
+          await customStatement('PRAGMA foreign_keys = OFF');
+          try {
+            await m.drop(recurringTransactions);
+            await m.drop(budgets);
+            await m.drop(transactions);
+            await m.drop(categories);
+          } catch (_) {}
+          await m.createAll();
+          await customStatement('PRAGMA foreign_keys = ON');
+        }
+      },
+      beforeOpen: (details) async {
+        await customStatement('PRAGMA foreign_keys = ON');
+      },
+    );
+  }
 
   Future<void> resetAllData() async {
     await transaction(() async {

@@ -324,7 +324,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                   label: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(cat.icon),
+                      Icon(IconData(cat.icon, fontFamily: 'MaterialIcons'), size: 18),
                       const SizedBox(width: 8),
                       Text(cat.name),
                     ],

@@ -1,7 +1,7 @@
 class CategoryEntity {
   final int id;
   final String name;
-  final String icon;
+  final int icon;
   final String color;
   final String type;
 

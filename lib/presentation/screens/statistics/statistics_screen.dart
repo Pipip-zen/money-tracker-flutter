@@ -220,7 +220,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             return ListTile(
               leading: CircleAvatar(
                 backgroundColor: color.withValues(alpha: 0.2),
-                child: Text(tx.categoryIcon),
+                child: Icon(IconData(tx.categoryIcon, fontFamily: 'MaterialIcons')),
               ),
               title: Text(tx.categoryName, style: const TextStyle(fontWeight: FontWeight.bold)),
               trailing: Column(

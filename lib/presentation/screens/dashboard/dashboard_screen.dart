@@ -272,7 +272,7 @@ class DashboardScreen extends ConsumerWidget {
                   contentPadding: EdgeInsets.zero,
                   leading: CircleAvatar(
                     backgroundColor: color.withValues(alpha: 0.2),
-                    child: Text(tx.categoryIcon, style: const TextStyle(fontSize: 20)),
+                    child: Icon(IconData(tx.categoryIcon, fontFamily: 'MaterialIcons'), size: 20),
                   ),
                   title: Text(tx.categoryName, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(
@@ -387,7 +387,7 @@ class _BudgetCard extends ConsumerWidget {
         data: (categories) {
           final category = categories.firstWhere(
             (c) => c.id == budget.categoryId,
-            orElse: () => const CategoryEntity(id: 0, name: 'Unknown', icon: '❓', color: '#000000', type: 'expense'),
+            orElse: () => const CategoryEntity(id: 0, name: 'Unknown', icon: 0xe8fd, color: '#000000', type: 'expense'), // Icons.help_outline
           );
           Color catColor = _parseColor(category.color);
           
@@ -399,7 +399,7 @@ class _BudgetCard extends ConsumerWidget {
                   CircleAvatar(
                     radius: 16,
                     backgroundColor: catColor.withValues(alpha: 0.2),
-                    child: Text(category.icon, style: const TextStyle(fontSize: 16), textAlign: TextAlign.center),
+                    child: Icon(IconData(category.icon, fontFamily: 'MaterialIcons'), size: 16),
                   ),
                   const SizedBox(width: 8),
                   Expanded(

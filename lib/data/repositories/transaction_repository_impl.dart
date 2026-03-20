@@ -25,7 +25,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         type: t.type,
         categoryId: t.categoryId,
         categoryName: category?.name ?? 'Unknown',
-        categoryIcon: category?.icon ?? '📦',
+        categoryIcon: category?.icon ?? 0xe3bd, // Icons.more_horiz
         categoryColor: category?.color ?? '#000000',
       );
     }).toList();
