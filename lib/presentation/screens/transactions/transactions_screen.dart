@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_theme.dart';
+import '../../../core/services/export_service.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../../providers/category_providers.dart';
@@ -19,6 +20,55 @@ class TransactionsScreen extends ConsumerStatefulWidget {
 class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
   CategoryEntity? _selectedCategory;
+  List<TransactionEntity> _lastLoaded = [];
+
+  void _showExportSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(height: 4, width: 40, margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            const Text('Ekspor Transaksi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const CircleAvatar(backgroundColor: Color(0xFFE8F5E9), child: Icon(Icons.table_chart, color: AppTheme.primaryGreen)),
+              title: const Text('Ekspor ke CSV'),
+              subtitle: const Text('File spreadsheet (.csv)'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final messenger = ScaffoldMessenger.of(context);
+                try {
+                  await ExportService.exportToCSV(_lastLoaded);
+                } catch (e) {
+                  messenger.showSnackBar(SnackBar(content: Text('Gagal ekspor: $e')));
+                }
+              },
+            ),
+            ListTile(
+              leading: const CircleAvatar(backgroundColor: Color(0xFFFFEBEE), child: Icon(Icons.picture_as_pdf, color: Colors.red)),
+              title: const Text('Ekspor ke PDF'),
+              subtitle: const Text('Laporan bulanan (.pdf)'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                final messenger = ScaffoldMessenger.of(context);
+                try {
+                  await ExportService.exportToPDF(_lastLoaded, _currentMonth.month, _currentMonth.year);
+                } catch (e) {
+                  messenger.showSnackBar(SnackBar(content: Text('Gagal ekspor: $e')));
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _previousMonth() {
     setState(() {
@@ -101,6 +151,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         title: const Text('Daftar Transaksi', style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         backgroundColor: AppTheme.primaryGreen,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.ios_share),
+            tooltip: 'Ekspor',
+            onPressed: () => _showExportSheet(context),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -109,6 +166,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             child: transactionsAsync.when(
               data: (transactions) {
                 var filtered = transactions;
+                _lastLoaded = transactions; // cache for export
                 if (_selectedCategory != null) {
                   filtered = filtered.where((t) => t.categoryId == _selectedCategory!.id).toList();
                 }
