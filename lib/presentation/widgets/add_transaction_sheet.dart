@@ -25,6 +25,21 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
   final TextEditingController _noteController = TextEditingController();
   CategoryEntity? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
+  String? _errorMessage;
+
+  void _showError(String message) {
+    if (!mounted) return;
+    setState(() => _errorMessage = message);
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _errorMessage = null);
+    });
+  }
+
+  void _clearError() {
+    if (_errorMessage != null) {
+      setState(() => _errorMessage = null);
+    }
+  }
 
   @override
   void initState() {
@@ -63,15 +78,11 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
     final amount = double.tryParse(amountText) ?? 0.0;
 
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Jumlah harus lebih dari 0')),
-      );
+      _showError('Nominal tidak boleh 0');
       return;
     }
     if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih kategori terlebih dahulu')),
-      );
+      _showError('Pilih kategori terlebih dahulu');
       return;
     }
 
@@ -106,11 +117,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
         Navigator.pop(context);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menyimpan: $e'), backgroundColor: Colors.red),
-        );
-      }
+      _showError('Gagal menyimpan transaksi, coba lagi');
     }
   }
 
@@ -198,6 +205,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                         setState(() {
                           _selectedType = newSelection.first;
                           _selectedCategory = null;
+                          _clearError();
                         });
                       },
                       style: ButtonStyle(
@@ -226,6 +234,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                               CurrencyInputFormatter(),
                             ],
                             textAlign: TextAlign.center,
+                            onChanged: (_) => _clearError(),
                             style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                             decoration: const InputDecoration(
                               border: InputBorder.none,
@@ -251,6 +260,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                     const SizedBox(height: 12),
                     TextField(
                       controller: _noteController,
+                      onChanged: (_) => _clearError(),
                       decoration: InputDecoration(
                         hintText: 'Opsional',
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -267,6 +277,27 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                 padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
                 child: Column(
                   children: [
+                    if (_errorMessage != null)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline,
+                                color: Theme.of(context).colorScheme.onErrorContainer, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(_errorMessage!,
+                                  style: TextStyle(
+                                      color: Theme.of(context).colorScheme.onErrorContainer)),
+                            ),
+                          ],
+                        ),
+                      ),
                     SizedBox(
                       width: double.infinity,
                       height: 56,
@@ -333,6 +364,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                   onSelected: (selected) {
                     setState(() {
                       _selectedCategory = selected ? cat : null;
+                      _clearError();
                     });
                   },
                   selectedColor: catColor.withValues(alpha: 0.2),
