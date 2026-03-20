@@ -9,6 +9,7 @@ import '../../providers/budget_providers.dart';
 import '../../providers/category_providers.dart';
 import '../../../domain/entities/budget_entity.dart';
 import '../../../domain/entities/category_entity.dart';
+import '../main_shell.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -184,10 +185,6 @@ class DashboardScreen extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Anggaran Bulan Ini', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            TextButton(
-              onPressed: () {},
-              child: const Text('Lihat Semua')
-            ),
           ],
         ),
         const SizedBox(height: 8),
@@ -198,7 +195,7 @@ class DashboardScreen extends ConsumerWidget {
               if (budgets.isEmpty) {
                 return Center(
                   child: Text(
-                    'Belum ada anggaran.',
+                    'Belum ada anggaran. Atur di menu Statistik.',
                     style: TextStyle(color: Colors.grey[500]),
                   ),
                 );
@@ -236,7 +233,9 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Text('Transaksi Terakhir', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                ref.read(selectedTabIndexProvider.notifier).state = 1;
+              },
               child: const Text('Lihat Semua')
             ),
           ],

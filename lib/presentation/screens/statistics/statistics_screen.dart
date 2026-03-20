@@ -7,6 +7,7 @@ import '../../../core/constants/app_theme.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../providers/transaction_providers.dart';
 import '../../widgets/monthly_comparison_card.dart';
+import '../budget/budget_screen.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -69,6 +70,21 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Anggaran Bulan Ini', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()));
+                    },
+                    child: const Text('Kelola Anggaran'),
+                  ),
+                ],
+              ),
+            ),
             _buildMonthSelector(),
             currentMonthAsync.when(
               data: (txs) => _buildCurrentMonthStats(txs),

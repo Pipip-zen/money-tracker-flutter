@@ -106,15 +106,27 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     return DateFormat('dd MMMM yyyy', 'id_ID').format(date);
   }
 
-  void _deleteTransaction(int id) async {
+  void _deleteTransaction(TransactionEntity tx) async {
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref.read(addTransactionProvider.notifier).deleteTransaction(id);
+      await ref.read(addTransactionProvider.notifier).deleteTransaction(tx.id);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transaksi dihapus')));
+        messenger.showSnackBar(
+          SnackBar(
+            content: const Text('Transaksi dihapus'),
+            action: SnackBarAction(
+              label: 'Batal',
+              textColor: AppTheme.accentGreen,
+              onPressed: () async {
+                await ref.read(addTransactionProvider.notifier).addTransaction(tx);
+              },
+            ),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Gagal menghapus')));
+        messenger.showSnackBar(const SnackBar(content: Text('Gagal menghapus')));
       }
     }
   }
@@ -242,7 +254,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                               );
                             },
                             onDismissed: (direction) {
-                              _deleteTransaction(tx.id);
+                              _deleteTransaction(tx);
                             },
                             background: Container(
                               alignment: Alignment.centerRight,

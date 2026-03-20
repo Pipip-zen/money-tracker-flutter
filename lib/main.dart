@@ -6,6 +6,7 @@ import 'core/constants/app_theme.dart';
 import 'core/services/recurring_service.dart';
 import 'data/database/app_database.dart';
 import 'data/database/seeder.dart';
+import 'presentation/providers/settings_provider.dart';
 import 'presentation/screens/main_shell.dart';
 
 void main() async {
@@ -21,16 +22,18 @@ void main() async {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+    
     return MaterialApp(
       title: 'Money Tracker',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       home: const MainShell(),
     );
   }

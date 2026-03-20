@@ -114,6 +114,32 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
     }
   }
 
+  void _delete() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Transaksi'),
+        content: const Text('Hapus transaksi ini?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              if (widget.existingTransaction != null) {
+                await ref.read(addTransactionProvider.notifier).deleteTransaction(widget.existingTransaction!.id);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transaksi dihapus')));
+                  Navigator.pop(context);
+                }
+              }
+            },
+            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -142,10 +168,23 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                   controller: scrollController,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   children: [
-                    Text(
-                      widget.existingTransaction == null ? 'Tambah Transaksi' : 'Ubah Transaksi',
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Text(
+                          widget.existingTransaction == null ? 'Tambah Transaksi' : 'Ubah Transaksi',
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (widget.existingTransaction != null)
+                          Positioned(
+                            right: 0,
+                            child: IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.red),
+                              onPressed: _delete,
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 24),
                     
@@ -225,6 +264,16 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         child: const Text('Simpan Transaksi', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
+                        child: const Text('Batalkan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                     SizedBox(height: MediaQuery.of(context).viewInsets.bottom + 24),

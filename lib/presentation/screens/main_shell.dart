@@ -1,31 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'transactions/transactions_screen.dart';
 import 'statistics/statistics_screen.dart';
-import 'budget/budget_screen.dart';
+import 'settings/settings_screen.dart';
 import '../widgets/add_transaction_sheet.dart';
 
-class MainShell extends StatefulWidget {
+final selectedTabIndexProvider = StateProvider<int>((ref) => 0);
+
+class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
+class _MainShellState extends ConsumerState<MainShell> {
 
   final List<Widget> _pages = const [
     DashboardScreen(),
     TransactionsScreen(),
     StatisticsScreen(),
-    BudgetScreen(),
+    SettingsScreen(),
   ];
 
   void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    ref.read(selectedTabIndexProvider.notifier).state = index;
   }
 
   void _openAddTransaction(BuildContext context) {
@@ -41,9 +41,11 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(selectedTabIndexProvider);
+
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: _pages,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -59,31 +61,31 @@ class _MainShellState extends State<MainShell> {
         clipBehavior: Clip.antiAlias,
         padding: EdgeInsets.zero,
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
+          currentIndex: currentIndex,
           onTap: _onTabTapped,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
           backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Colors.transparent,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
+              icon: Icon(Icons.home_rounded),
+              activeIcon: Icon(Icons.home_rounded),
               label: 'Dashboard',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              activeIcon: Icon(Icons.receipt_long),
+              icon: Icon(Icons.receipt_long_rounded),
+              activeIcon: Icon(Icons.receipt_long_rounded),
               label: 'Transactions',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart_outlined),
-              activeIcon: Icon(Icons.bar_chart),
+              icon: Icon(Icons.bar_chart_rounded),
+              activeIcon: Icon(Icons.bar_chart_rounded),
               label: 'Statistics',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              activeIcon: Icon(Icons.account_balance_wallet),
-              label: 'Anggaran',
+              icon: Icon(Icons.settings_rounded),
+              activeIcon: Icon(Icons.settings_rounded),
+              label: 'Pengaturan',
             ),
           ],
         ),

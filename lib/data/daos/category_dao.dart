@@ -22,4 +22,17 @@ class CategoryDao extends DatabaseAccessor<AppDatabase> with _$CategoryDaoMixin 
 
   Future<int> deleteCategory(int id) =>
       (delete(categories)..where((c) => c.id.equals(id))).go();
+
+  Future<bool> isCategoryInUse(int id) async {
+    final hasTx = await (db.select(db.transactions)..where((t) => t.categoryId.equals(id))).get();
+    if (hasTx.isNotEmpty) return true;
+
+    final hasBudget = await (db.select(db.budgets)..where((b) => b.categoryId.equals(id))).get();
+    if (hasBudget.isNotEmpty) return true;
+
+    final hasRecurring = await (db.select(db.recurringTransactions)..where((r) => r.categoryId.equals(id))).get();
+    if (hasRecurring.isNotEmpty) return true;
+
+    return false;
+  }
 }
