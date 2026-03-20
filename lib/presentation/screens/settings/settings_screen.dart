@@ -167,7 +167,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             secondary: const Icon(Icons.dark_mode, color: Colors.indigo),
             title: const Text('Mode Gelap'),
             value: isDark,
-            activeColor: AppTheme.accentGreen,
+            activeThumbColor: AppTheme.accentGreen,
             onChanged: (val) {
               ref.read(themeModeProvider.notifier).setTheme(val ? ThemeMode.dark : ThemeMode.light);
             },
@@ -178,7 +178,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             trailing: versionAsync.when(
               data: (v) => Text(v, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
               loading: () => const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-              error: (_, __) => const Text('Error'),
+              error: (_, _) => const Text('Error'),
             ),
           ),
           const SizedBox(height: 32),

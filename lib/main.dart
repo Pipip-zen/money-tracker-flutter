@@ -7,7 +7,9 @@ import 'core/services/recurring_service.dart';
 import 'data/database/app_database.dart';
 import 'data/database/seeder.dart';
 import 'presentation/providers/settings_provider.dart';
+import 'presentation/providers/user_provider.dart';
 import 'presentation/screens/main_shell.dart';
+import 'presentation/screens/onboarding/onboarding_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,13 +30,18 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
+    final onboardingAsync = ref.watch(onboardingStatusProvider);
     
     return MaterialApp(
       title: 'Money Tracker',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
-      home: const MainShell(),
+      home: onboardingAsync.when(
+        data: (isDone) => isDone ? const MainShell() : const OnboardingScreen(),
+        loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (_, __) => const MainShell(),
+      ),
     );
   }
 }

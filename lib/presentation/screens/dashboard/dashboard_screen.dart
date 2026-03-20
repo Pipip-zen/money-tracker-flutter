@@ -7,6 +7,7 @@ import '../../../core/constants/app_theme.dart';
 import '../../providers/dashboard_providers.dart';
 import '../../providers/budget_providers.dart';
 import '../../providers/category_providers.dart';
+import '../../providers/user_provider.dart';
 import '../../../domain/entities/budget_entity.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../main_shell.dart';
@@ -25,7 +26,7 @@ class DashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(context, now),
+              _buildHeader(context, ref, now),
               const SizedBox(height: 24),
               _buildBalanceCard(context, ref, now),
               const SizedBox(height: 24),
@@ -39,8 +40,11 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, DateTime now) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref, DateTime now) {
     final monthFormat = DateFormat('MMMM yyyy', 'id_ID'); // Will fallback if locale not initialized
+    final userState = ref.watch(userProvider);
+    final greetingName = userState.name.isNotEmpty ? userState.name.split(' ').first : '';
+    final greetingText = greetingName.isNotEmpty ? 'Halo, $greetingName 👋' : 'Halo!';
     
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -49,7 +53,7 @@ class DashboardScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Halo!',
+              greetingText,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
