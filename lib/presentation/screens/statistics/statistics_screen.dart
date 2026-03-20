@@ -6,6 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../providers/transaction_providers.dart';
+import '../../widgets/monthly_comparison_card.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -80,6 +81,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               loading: () => const SizedBox(height: 300, child: Center(child: CircularProgressIndicator())),
               error: (e, st) => Center(child: Text('Error: $e')),
             ),
+            const Divider(height: 48, thickness: 8, color: Color(0xFFF0F0F0)),
+            MonthlyComparisonCard(currentMonth: _currentMonth),
             const SizedBox(height: 40),
           ],
         ),
