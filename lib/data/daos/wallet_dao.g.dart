@@ -1,22 +1,22 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'transaction_dao.dart';
+part of 'wallet_dao.dart';
 
 // ignore_for_file: type=lint
-mixin _$TransactionDaoMixin on DatabaseAccessor<AppDatabase> {
-  $CategoriesTable get categories => attachedDatabase.categories;
+mixin _$WalletDaoMixin on DatabaseAccessor<AppDatabase> {
   $WalletTableTable get walletTable => attachedDatabase.walletTable;
+  $CategoriesTable get categories => attachedDatabase.categories;
   $TransactionsTable get transactions => attachedDatabase.transactions;
-  TransactionDaoManager get managers => TransactionDaoManager(this);
+  WalletDaoManager get managers => WalletDaoManager(this);
 }
 
-class TransactionDaoManager {
-  final _$TransactionDaoMixin _db;
-  TransactionDaoManager(this._db);
-  $$CategoriesTableTableManager get categories =>
-      $$CategoriesTableTableManager(_db.attachedDatabase, _db.categories);
+class WalletDaoManager {
+  final _$WalletDaoMixin _db;
+  WalletDaoManager(this._db);
   $$WalletTableTableTableManager get walletTable =>
       $$WalletTableTableTableManager(_db.attachedDatabase, _db.walletTable);
+  $$CategoriesTableTableManager get categories =>
+      $$CategoriesTableTableManager(_db.attachedDatabase, _db.categories);
   $$TransactionsTableTableManager get transactions =>
       $$TransactionsTableTableManager(_db.attachedDatabase, _db.transactions);
 }

@@ -24,6 +24,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
         date: t.date,
         type: t.type,
         categoryId: t.categoryId,
+        walletId: t.walletId,
+        toWalletId: t.toWalletId,
         categoryName: category?.name ?? 'Unknown',
         categoryIcon: category?.icon ?? 0xe3bd, // Icons.more_horiz
         categoryColor: category?.color ?? '#000000',
@@ -38,6 +40,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
     date: Value(t.date),
     type: Value(t.type),
     categoryId: Value(t.categoryId),
+    walletId: Value(t.walletId),
+    toWalletId: Value(t.toWalletId),
   );
 
   @override

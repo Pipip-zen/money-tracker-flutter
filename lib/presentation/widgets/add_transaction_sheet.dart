@@ -17,10 +17,12 @@ class AddTransactionBottomSheet extends ConsumerStatefulWidget {
   const AddTransactionBottomSheet({super.key, this.existingTransaction});
 
   @override
-  ConsumerState<AddTransactionBottomSheet> createState() => _AddTransactionBottomSheetState();
+  ConsumerState<AddTransactionBottomSheet> createState() =>
+      _AddTransactionBottomSheetState();
 }
 
-class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottomSheet> {
+class _AddTransactionBottomSheetState
+    extends ConsumerState<AddTransactionBottomSheet> {
   late String _selectedType;
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
@@ -48,18 +50,24 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
     if (widget.existingTransaction != null) {
       final tx = widget.existingTransaction!;
       _selectedType = tx.type;
-      
+
       final intValue = tx.amount.toInt();
-      final formatter = NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0);
+      final formatter = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: '',
+        decimalDigits: 0,
+      );
       _amountController.text = formatter.format(intValue).trim();
 
-      _selectedCategory = CategoryEntity(
-        id: tx.categoryId,
-        name: tx.categoryName,
-        icon: tx.categoryIcon,
-        color: tx.categoryColor,
-        type: tx.type,
-      );
+      if (tx.categoryId != null) {
+        _selectedCategory = CategoryEntity(
+          id: tx.categoryId!,
+          name: tx.categoryName,
+          icon: tx.categoryIcon,
+          color: tx.categoryColor,
+          type: tx.type,
+        );
+      }
       _noteController.text = tx.note ?? '';
       _selectedDate = tx.date;
     } else {
@@ -90,7 +98,9 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
     final entity = TransactionEntity(
       id: widget.existingTransaction?.id ?? 0,
       amount: amount,
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      note: _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim(),
       date: _selectedDate,
       type: _selectedType,
       categoryId: _selectedCategory!.id,
@@ -100,7 +110,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
     );
 
     final notifier = ref.read(addTransactionProvider.notifier);
-    
+
     try {
       if (widget.existingTransaction == null) {
         await notifier.addTransaction(entity);
@@ -111,7 +121,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Transaksi berhasil disimpan!'), 
+            content: Text('Transaksi berhasil disimpan!'),
             backgroundColor: AppTheme.accentGreen,
           ),
         );
@@ -121,7 +131,6 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
       _showError('Gagal menyimpan transaksi, coba lagi');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -155,18 +164,29 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                       alignment: Alignment.center,
                       children: [
                         Text(
-                          widget.existingTransaction == null ? 'Tambah Transaksi' : 'Ubah Transaksi',
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          widget.existingTransaction == null
+                              ? 'Tambah Transaksi'
+                              : 'Ubah Transaksi',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                     const SizedBox(height: 24),
-                    
+
                     SegmentedButton<String>(
                       segments: const [
-                        ButtonSegment(value: 'expense', label: Text('Pengeluaran')),
-                        ButtonSegment(value: 'income', label: Text('Pemasukan')),
+                        ButtonSegment(
+                          value: 'expense',
+                          label: Text('Pengeluaran'),
+                        ),
+                        ButtonSegment(
+                          value: 'income',
+                          label: Text('Pemasukan'),
+                        ),
                       ],
                       selected: {_selectedType},
                       onSelectionChanged: (Set<String> newSelection) {
@@ -177,14 +197,16 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                         });
                       },
                       style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
-                          if (states.contains(WidgetState.selected)) {
-                            return _selectedType == 'income' 
-                                ? AppTheme.accentGreen.withValues(alpha: 0.2) 
-                                : Colors.red.withValues(alpha: 0.2);
-                          }
-                          return Colors.transparent;
-                        }),
+                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                          (states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return _selectedType == 'income'
+                                  ? AppTheme.accentGreen.withValues(alpha: 0.2)
+                                  : Colors.red.withValues(alpha: 0.2);
+                            }
+                            return Colors.transparent;
+                          },
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -192,18 +214,29 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Rp ', style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
+                        const Text(
+                          'Rp ',
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         IntrinsicWidth(
                           child: TextFormField(
                             controller: _amountController,
-                            keyboardType: const TextInputType.numberWithOptions(decimal: false),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: false,
+                            ),
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly,
                               CurrencyInputFormatter(),
                             ],
                             textAlign: TextAlign.center,
                             onChanged: (_) => _clearError(),
-                            style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                            ),
                             decoration: const InputDecoration(
                               border: InputBorder.none,
                               hintText: '0',
@@ -214,25 +247,39 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                     ),
                     const SizedBox(height: 24),
 
-                    const Text('Kategori', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Kategori',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 12),
                     _buildCategorySelector(),
                     const SizedBox(height: 24),
 
-                    const Text('Tanggal', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Tanggal',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 12),
                     _buildTableCalendar(),
                     const SizedBox(height: 24),
 
-                    const Text('Catatan', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Catatan',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _noteController,
                       onChanged: (_) => _clearError(),
                       decoration: InputDecoration(
                         hintText: 'Opsional',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                       maxLines: 2,
                     ),
@@ -242,26 +289,44 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
               ),
               // Fixed Bottom Section
               Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 24),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  16,
+                  16,
+                  MediaQuery.of(context).viewInsets.bottom + 24,
+                ),
                 child: Column(
                   children: [
                     if (_errorMessage != null)
                       Container(
                         margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.errorContainer,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.error_outline,
-                                color: Theme.of(context).colorScheme.onErrorContainer, size: 18),
+                            Icon(
+                              Icons.error_outline,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onErrorContainer,
+                              size: 18,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(_errorMessage!,
-                                  style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onErrorContainer)),
+                              child: Text(
+                                _errorMessage!,
+                                style: TextStyle(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onErrorContainer,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -274,9 +339,17 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppTheme.primaryGreen,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
-                        child: const Text('Simpan Transaksi', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'Simpan Transaksi',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -285,8 +358,18 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                       height: 56,
                       child: TextButton(
                         onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.onSurfaceVariant),
-                        child: const Text('Batalkan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onSurfaceVariant,
+                        ),
+                        child: const Text(
+                          'Batalkan',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -312,7 +395,7 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
           child: Row(
             children: categories.map((cat) {
               final isSelected = _selectedCategory?.id == cat.id;
-              
+
               String hex = cat.color.replaceAll('#', '');
               if (hex.length == 6) hex = 'FF$hex';
               final catColor = Color(int.parse(hex, radix: 16));
@@ -339,7 +422,11 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
                   backgroundColor: Theme.of(context).colorScheme.surface,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: isSelected ? catColor : Theme.of(context).colorScheme.surfaceContainerHigh),
+                    side: BorderSide(
+                      color: isSelected
+                          ? catColor
+                          : Theme.of(context).colorScheme.surfaceContainerHigh,
+                    ),
                   ),
                 ),
               );
@@ -355,7 +442,9 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
   Widget _buildTableCalendar() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        ),
         borderRadius: BorderRadius.circular(16),
       ),
       child: TableCalendar(
@@ -382,15 +471,24 @@ class _AddTransactionBottomSheetState extends ConsumerState<AddTransactionBottom
 
 class CurrencyInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     if (newValue.text.isEmpty) {
       return newValue.copyWith(text: '');
     }
 
-    final intValue = int.tryParse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
+    final intValue = int.tryParse(
+      newValue.text.replaceAll(RegExp(r'[^0-9]'), ''),
+    );
     if (intValue == null) return oldValue;
 
-    final formatter = NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0);
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: '',
+      decimalDigits: 0,
+    );
     final newString = formatter.format(intValue).trim();
 
     return TextEditingValue(

@@ -1,10 +1,14 @@
+enum TransactionType { income, expense, transfer }
+
 class TransactionEntity {
   final int id;
   final double amount;
   final String? note;
   final DateTime date;
   final String type;
-  final int categoryId;
+  final int? categoryId;
+  final int? walletId;
+  final int? toWalletId;
   final String categoryName;
   final int categoryIcon;
   final String categoryColor;
@@ -16,6 +20,8 @@ class TransactionEntity {
     required this.date,
     required this.type,
     required this.categoryId,
+    this.walletId,
+    this.toWalletId,
     required this.categoryName,
     required this.categoryIcon,
     required this.categoryColor,
@@ -28,6 +34,8 @@ class TransactionEntity {
     DateTime? date,
     String? type,
     int? categoryId,
+    int? walletId,
+    int? toWalletId,
     String? categoryName,
     int? categoryIcon,
     String? categoryColor,
@@ -39,6 +47,8 @@ class TransactionEntity {
       date: date ?? this.date,
       type: type ?? this.type,
       categoryId: categoryId ?? this.categoryId,
+      walletId: walletId ?? this.walletId,
+      toWalletId: toWalletId ?? this.toWalletId,
       categoryName: categoryName ?? this.categoryName,
       categoryIcon: categoryIcon ?? this.categoryIcon,
       categoryColor: categoryColor ?? this.categoryColor,

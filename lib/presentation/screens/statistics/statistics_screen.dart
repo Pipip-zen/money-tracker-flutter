@@ -159,9 +159,12 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
     double totalExpense = 0;
     for (var tx in expenses) {
-      categoryTotals[tx.categoryId] =
-          (categoryTotals[tx.categoryId] ?? 0) + tx.amount;
-      categoryMap[tx.categoryId] = tx;
+      final categoryId = tx.categoryId;
+      if (categoryId == null) continue;
+
+      categoryTotals[categoryId] =
+          (categoryTotals[categoryId] ?? 0) + tx.amount;
+      categoryMap[categoryId] = tx;
       totalExpense += tx.amount;
     }
 
@@ -237,12 +240,18 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           const SizedBox(height: 4),
           Text(
             currencyFormat.format(sortedEntries[_touchedPieIndex].value),
-            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ] else ...[
           Text(
             'Total Pengeluaran',
-            style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -266,9 +275,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             return ListTile(
               leading: CircleAvatar(
                 backgroundColor: color.withValues(alpha: 0.2),
-                child: Icon(
-                  IconUtils.getIcon(tx.categoryIcon),
-                ),
+                child: Icon(IconUtils.getIcon(tx.categoryIcon)),
               ),
               title: Text(
                 tx.categoryName,
@@ -284,7 +291,10 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                   ),
                   Text(
                     '${percent.toStringAsFixed(1)}%',
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -390,7 +400,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                 maxY: maxY * 1.2,
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (group) => Theme.of(context).colorScheme.surfaceContainerHighest,
+                    getTooltipColor: (group) =>
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       final currency = NumberFormat.currency(
                         locale: 'id_ID',
@@ -424,7 +435,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                         return Text(
                           _compactCurrency(value),
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 10,
                           ),
                         );
@@ -449,7 +462,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                           child: Text(
                             monthFormat.format(date),
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
