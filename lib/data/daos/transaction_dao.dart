@@ -4,21 +4,47 @@ import '../database/app_database.dart';
 part 'transaction_dao.g.dart';
 
 @DriftAccessor(tables: [Transactions])
-class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDaoMixin {
+class TransactionDao extends DatabaseAccessor<AppDatabase>
+    with _$TransactionDaoMixin {
   TransactionDao(super.db);
 
-  Stream<List<Transaction>> watchAllTransactions() => select(transactions).watch();
+  Stream<List<Transaction>> watchAllTransactions() => (select(
+    transactions,
+  )..orderBy([(t) => OrderingTerm.desc(t.date)])).watch();
 
-  Future<List<Transaction>> getTransactionsByDateRange(DateTime from, DateTime to) {
-    return (select(transactions)
-      ..where((t) => t.date.isBetweenValues(from, to)))
-      .get();
+  Future<List<Transaction>> getTransactionsByDateRange(
+    DateTime from,
+    DateTime to,
+  ) {
+    return (select(
+      transactions,
+    )..where((t) => t.date.isBetweenValues(from, to))).get();
   }
 
   Future<List<Transaction>> getTransactionsByCategory(int categoryId) {
+    return (select(transactions)..where(
+          (t) =>
+              t.categoryId.equals(categoryId) & t.type.equals('transfer').not(),
+        ))
+        .get();
+  }
+
+  Future<List<Transaction>> getTransactionsByWallet(int walletId) {
     return (select(transactions)
-      ..where((t) => t.categoryId.equals(categoryId)))
-      .get();
+          ..where(
+            (t) => t.walletId.equals(walletId) | t.toWalletId.equals(walletId),
+          )
+          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+        .get();
+  }
+
+  Stream<List<Transaction>> watchTransactionsByWallet(int walletId) {
+    return (select(transactions)
+          ..where(
+            (t) => t.walletId.equals(walletId) | t.toWalletId.equals(walletId),
+          )
+          ..orderBy([(t) => OrderingTerm.desc(t.date)]))
+        .watch();
   }
 
   Future<int> insertTransaction(TransactionsCompanion transaction) =>
@@ -34,12 +60,18 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
     final amountExp = transactions.amount.sum();
     final startDate = DateTime(year, month, 1);
     final endDate = DateTime(year, month + 1, 0, 23, 59, 59);
-    
+
     final query = selectOnly(transactions)
       ..addColumns([amountExp])
-      ..where(transactions.type.equals(type) & transactions.date.isBetweenValues(startDate, endDate));
-      
-    final result = await query.map((row) => row.read(amountExp)).getSingleOrNull();
+      ..where(
+        transactions.type.equals(type) &
+            transactions.type.equals('transfer').not() &
+            transactions.date.isBetweenValues(startDate, endDate),
+      );
+
+    final result = await query
+        .map((row) => row.read(amountExp))
+        .getSingleOrNull();
     return result ?? 0.0;
   }
 }

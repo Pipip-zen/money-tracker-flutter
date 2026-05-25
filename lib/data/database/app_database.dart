@@ -87,7 +87,7 @@ class AppDatabase extends _$AppDatabase {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
-        await _insertDefaultWallet();
+        await _ensureDefaultWallet();
       },
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
@@ -102,17 +102,28 @@ class AppDatabase extends _$AppDatabase {
           } catch (_) {}
           await m.createAll();
           await customStatement('PRAGMA foreign_keys = ON');
-          await _insertDefaultWallet();
+          await _ensureDefaultWallet();
         } else {
           if (from < 3) {
             await m.createTable(walletTable);
-            await m.addColumn(transactions, transactions.walletId);
-            await m.addColumn(transactions, transactions.toWalletId);
-            await _insertDefaultWallet();
           }
 
           if (from < 4) {
-            await _makeTransactionCategoryNullable();
+            final defaultWalletId = await _ensureDefaultWallet();
+            await _addTransactionColumnIfMissing(
+              m,
+              'wallet_id',
+              transactions.walletId,
+            );
+            await _addTransactionColumnIfMissing(
+              m,
+              'to_wallet_id',
+              transactions.toWalletId,
+            );
+            await customStatement(
+              'UPDATE transactions SET wallet_id = ? WHERE wallet_id IS NULL',
+              [defaultWalletId],
+            );
           }
         }
       },
@@ -130,7 +141,12 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<int> _insertDefaultWallet() {
+  Future<int> _ensureDefaultWallet() async {
+    final existingDefault = await (select(
+      walletTable,
+    )..where((w) => w.isDefault.equals(true))).getSingleOrNull();
+    if (existingDefault != null) return existingDefault.id;
+
     final now = DateTime.now();
 
     // Keep this id for next migration/task when existing transactions need a wallet_id.
@@ -144,36 +160,19 @@ class AppDatabase extends _$AppDatabase {
         createdAt: now,
         updatedAt: now,
       ),
-      mode: InsertMode.insertOrIgnore,
     );
   }
 
-  Future<void> _makeTransactionCategoryNullable() async {
-    await customStatement('PRAGMA foreign_keys = OFF');
-    await customStatement('''
-      CREATE TABLE transactions_new (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        amount REAL NOT NULL,
-        note TEXT NULL,
-        date INTEGER NOT NULL,
-        type TEXT NOT NULL,
-        category_id INTEGER NULL REFERENCES categories (id),
-        wallet_id INTEGER NULL REFERENCES wallets (id),
-        to_wallet_id INTEGER NULL REFERENCES wallets (id)
-      )
-    ''');
-    await customStatement('''
-      INSERT INTO transactions_new (
-        id, amount, note, date, type, category_id, wallet_id, to_wallet_id
-      )
-      SELECT id, amount, note, date, type, category_id, wallet_id, to_wallet_id
-      FROM transactions
-    ''');
-    await customStatement('DROP TABLE transactions');
-    await customStatement(
-      'ALTER TABLE transactions_new RENAME TO transactions',
-    );
-    await customStatement('PRAGMA foreign_keys = ON');
+  Future<void> _addTransactionColumnIfMissing(
+    Migrator migrator,
+    String columnName,
+    GeneratedColumn column,
+  ) async {
+    final columns = await customSelect('PRAGMA table_info(transactions)').get();
+    final exists = columns.any((row) => row.data['name'] == columnName);
+    if (!exists) {
+      await migrator.addColumn(transactions, column);
+    }
   }
 }
 

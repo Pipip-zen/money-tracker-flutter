@@ -2,8 +2,13 @@ import '../entities/transaction_entity.dart';
 
 abstract class TransactionRepository {
   Stream<List<TransactionEntity>> watchAllTransactions();
-  Future<List<TransactionEntity>> getTransactionsByDateRange(DateTime from, DateTime to);
+  Future<List<TransactionEntity>> getTransactionsByDateRange(
+    DateTime from,
+    DateTime to,
+  );
   Future<List<TransactionEntity>> getTransactionsByCategory(int categoryId);
+  Future<List<TransactionEntity>> getTransactionsByWallet(int walletId);
+  Stream<List<TransactionEntity>> watchTransactionsByWallet(int walletId);
   Future<int> insertTransaction(TransactionEntity transaction);
   Future<bool> updateTransaction(TransactionEntity transaction);
   Future<int> deleteTransaction(int id);

@@ -14,7 +14,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<List<TransactionEntity>> _mapList(List<Transaction> list) async {
     final categories = await _categoryDao.getAllCategories();
     final categoryMap = {for (var c in categories) c.id: c};
-    
+
     return list.map((t) {
       final category = categoryMap[t.categoryId];
       return TransactionEntity(
@@ -46,19 +46,39 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   @override
   Stream<List<TransactionEntity>> watchAllTransactions() {
-    return _transactionDao.watchAllTransactions().asyncMap((list) => _mapList(list));
+    return _transactionDao.watchAllTransactions().asyncMap(
+      (list) => _mapList(list),
+    );
   }
 
   @override
-  Future<List<TransactionEntity>> getTransactionsByDateRange(DateTime from, DateTime to) async {
+  Future<List<TransactionEntity>> getTransactionsByDateRange(
+    DateTime from,
+    DateTime to,
+  ) async {
     final list = await _transactionDao.getTransactionsByDateRange(from, to);
     return _mapList(list);
   }
 
   @override
-  Future<List<TransactionEntity>> getTransactionsByCategory(int categoryId) async {
+  Future<List<TransactionEntity>> getTransactionsByCategory(
+    int categoryId,
+  ) async {
     final list = await _transactionDao.getTransactionsByCategory(categoryId);
     return _mapList(list);
+  }
+
+  @override
+  Future<List<TransactionEntity>> getTransactionsByWallet(int walletId) async {
+    final list = await _transactionDao.getTransactionsByWallet(walletId);
+    return _mapList(list);
+  }
+
+  @override
+  Stream<List<TransactionEntity>> watchTransactionsByWallet(int walletId) {
+    return _transactionDao
+        .watchTransactionsByWallet(walletId)
+        .asyncMap((list) => _mapList(list));
   }
 
   @override
