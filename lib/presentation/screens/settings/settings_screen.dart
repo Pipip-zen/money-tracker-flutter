@@ -6,6 +6,7 @@ import '../../../core/services/export_service.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/transaction_providers.dart';
 import '../recurring/recurring_screen.dart';
+import '../wallet/wallet_list_screen.dart';
 import 'category_management_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -25,20 +26,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final allTxs = await ref.read(transactionsStreamProvider.future);
       final txs = allTxs.where((t) {
         return t.date.isAfter(firstDay.subtract(const Duration(seconds: 1))) &&
-               t.date.isBefore(lastDay.add(const Duration(seconds: 1)));
+            t.date.isBefore(lastDay.add(const Duration(seconds: 1)));
       }).toList();
       if (txs.isEmpty && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak ada data bulan ini')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tidak ada data bulan ini')),
+        );
         return;
       }
-      
+
       if (isPdf) {
         await ExportService.exportToPDF(txs, now.month, now.year);
       } else {
         await ExportService.exportToCSV(txs);
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ekspor gagal: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Ekspor gagal: $e')));
+      }
     }
   }
 
@@ -63,20 +70,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
 
     if (range != null && mounted) {
-      final endDay = DateTime(range.end.year, range.end.month, range.end.day, 23, 59, 59);
+      final endDay = DateTime(
+        range.end.year,
+        range.end.month,
+        range.end.day,
+        23,
+        59,
+        59,
+      );
       try {
         final allTxs = await ref.read(transactionsStreamProvider.future);
         final txs = allTxs.where((t) {
-          return t.date.isAfter(range.start.subtract(const Duration(seconds: 1))) &&
-                 t.date.isBefore(endDay.add(const Duration(seconds: 1)));
+          return t.date.isAfter(
+                range.start.subtract(const Duration(seconds: 1)),
+              ) &&
+              t.date.isBefore(endDay.add(const Duration(seconds: 1)));
         }).toList();
         if (txs.isEmpty && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Tidak ada data di rentang waktu ini')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Tidak ada data di rentang waktu ini'),
+            ),
+          );
           return;
         }
         await ExportService.exportToCSV(txs);
       } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ekspor gagal: $e')));
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Ekspor gagal: $e')));
+        }
       }
     }
   }
@@ -91,14 +115,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           'Kategori yang Anda miliki tidak akan dihapus.\n\nAnda yakin ingin melanjutkan?',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () {
               Navigator.pop(ctx);
               ref.read(resetDataProvider)();
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Semua data telah direset')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Semua data telah direset')),
+                );
               }
             },
             child: const Text('Ya, Hapus Semua Data'),
@@ -116,7 +148,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pengaturan', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Pengaturan',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
       ),
       body: ListView(
@@ -124,12 +159,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           // FITUR
           _buildSectionHeader('Fitur'),
           ListTile(
-            leading: const Icon(Icons.repeat_rounded, color: AppTheme.primaryGreen),
+            leading: const Icon(
+              Icons.repeat_rounded,
+              color: AppTheme.primaryGreen,
+            ),
             title: const Text('Transaksi Berulang'),
             subtitle: const Text('Kelola transaksi yang otomatis dicatat'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const RecurringScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const RecurringScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(
+              Icons.account_balance_wallet_rounded,
+              color: AppTheme.accentGreen,
+            ),
+            title: const Text('Dompet Saya'),
+            subtitle: const Text('Kelola dompet dan saldo'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const WalletListScreen()),
+              );
             },
           ),
           const Divider(),
@@ -164,7 +220,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: const Text('Tambah, edit, atau hapus kategori'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryManagementScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CategoryManagementScreen(),
+                ),
+              );
             },
           ),
           const Divider(),
@@ -177,15 +238,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: isDark,
             activeThumbColor: AppTheme.accentGreen,
             onChanged: (val) {
-              ref.read(themeModeProvider.notifier).setTheme(val ? ThemeMode.dark : ThemeMode.light);
+              ref
+                  .read(themeModeProvider.notifier)
+                  .setTheme(val ? ThemeMode.dark : ThemeMode.light);
             },
           ),
           ListTile(
-            leading: Icon(Icons.info_outline, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            leading: Icon(
+              Icons.info_outline,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             title: const Text('Versi Aplikasi'),
             trailing: versionAsync.when(
-              data: (v) => Text(v, style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-              loading: () => const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+              data: (v) => Text(
+                v,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              loading: () => const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
               error: (_, _) => const Text('Error'),
             ),
           ),
@@ -202,8 +278,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 foregroundColor: Theme.of(context).colorScheme.error,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 elevation: 0,
-                side: BorderSide(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.5)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                side: BorderSide(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.error.withValues(alpha: 0.5),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: _confirmResetData,
             ),
@@ -219,7 +301,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
         title.toUpperCase(),
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.accentGreen, letterSpacing: 1.2),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: AppTheme.accentGreen,
+          letterSpacing: 1.2,
+        ),
       ),
     );
   }

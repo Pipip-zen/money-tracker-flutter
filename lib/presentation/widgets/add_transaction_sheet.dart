@@ -7,8 +7,11 @@ import 'package:table_calendar/table_calendar.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../../../domain/entities/transaction_entity.dart';
+import '../../../domain/entities/wallet.dart';
 import '../providers/category_providers.dart';
 import '../providers/transaction_providers.dart';
+import '../providers/wallet_provider.dart';
+import 'wallet/wallet_picker_sheet.dart';
 import '../../core/utils/icon_utils.dart';
 
 class AddTransactionBottomSheet extends ConsumerStatefulWidget {
@@ -29,6 +32,7 @@ class _AddTransactionBottomSheetState
   CategoryEntity? _selectedCategory;
   DateTime _selectedDate = DateTime.now();
   String? _errorMessage;
+  bool _didSetInitialWallet = false;
 
   void _showError(String message) {
     if (!mounted) return;
@@ -70,6 +74,9 @@ class _AddTransactionBottomSheetState
       }
       _noteController.text = tx.note ?? '';
       _selectedDate = tx.date;
+      Future.microtask(() {
+        ref.read(selectedWalletIdProvider.notifier).state = tx.walletId;
+      });
     } else {
       _selectedType = 'expense';
     }
@@ -94,6 +101,11 @@ class _AddTransactionBottomSheetState
       _showError('Pilih kategori terlebih dahulu');
       return;
     }
+    final walletId = ref.read(selectedWalletIdProvider);
+    if (walletId == null) {
+      _showError('Pilih dompet terlebih dahulu');
+      return;
+    }
 
     final entity = TransactionEntity(
       id: widget.existingTransaction?.id ?? 0,
@@ -104,6 +116,8 @@ class _AddTransactionBottomSheetState
       date: _selectedDate,
       type: _selectedType,
       categoryId: _selectedCategory!.id,
+      walletId: walletId,
+      toWalletId: null,
       categoryName: _selectedCategory!.name,
       categoryIcon: _selectedCategory!.icon,
       categoryColor: _selectedCategory!.color,
@@ -134,6 +148,25 @@ class _AddTransactionBottomSheetState
 
   @override
   Widget build(BuildContext context) {
+    final defaultWallet = ref.watch(defaultWalletProvider);
+    final selectedWalletId = ref.watch(selectedWalletIdProvider);
+    final wallets = ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[];
+
+    defaultWallet.whenData((wallet) {
+      if (_didSetInitialWallet ||
+          selectedWalletId != null ||
+          wallet == null ||
+          widget.existingTransaction != null) {
+        return;
+      }
+      _didSetInitialWallet = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(selectedWalletIdProvider.notifier).state = wallet.id;
+        }
+      });
+    });
+
     return DraggableScrollableSheet(
       initialChildSize: 0.9,
       minChildSize: 0.5,
@@ -245,6 +278,14 @@ class _AddTransactionBottomSheetState
                         ),
                       ],
                     ),
+                    const SizedBox(height: 24),
+
+                    const Text(
+                      'Dompet',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildWalletSelector(wallets, selectedWalletId),
                     const SizedBox(height: 24),
 
                     const Text(
@@ -439,6 +480,60 @@ class _AddTransactionBottomSheetState
     );
   }
 
+  Widget _buildWalletSelector(List<Wallet> wallets, int? selectedWalletId) {
+    final selectedWallet = wallets
+        .where((wallet) => wallet.id == selectedWalletId)
+        .firstOrNull;
+    final color = selectedWallet == null
+        ? Theme.of(context).colorScheme.primary
+        : _parseColor(selectedWallet.colorHex);
+
+    return InkWell(
+      onTap: () async {
+        final selected = await WalletPickerSheet.show(
+          context,
+          selectedWalletId: selectedWalletId,
+        );
+        if (selected == null) return;
+        ref.read(selectedWalletIdProvider.notifier).state = selected;
+        _clearError();
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: color.withValues(alpha: 0.14),
+              child: Icon(
+                selectedWallet == null
+                    ? Icons.account_balance_wallet_rounded
+                    : _walletIcon(selectedWallet.iconName),
+                color: color,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                selectedWallet?.name ?? 'Pilih dompet',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+            const Icon(Icons.keyboard_arrow_down_rounded),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTableCalendar() {
     return Container(
       decoration: BoxDecoration(
@@ -467,6 +562,24 @@ class _AddTransactionBottomSheetState
       ),
     );
   }
+}
+
+Color _parseColor(String hex) {
+  return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
+}
+
+IconData _walletIcon(String name) {
+  return switch (name) {
+    'cash' => Icons.payments_rounded,
+    'mandiri' => Icons.account_balance_rounded,
+    'bri' => Icons.account_balance_rounded,
+    'bca' => Icons.account_balance_rounded,
+    'ovo' => Icons.account_balance_wallet_rounded,
+    'gopay' => Icons.motorcycle_rounded,
+    'dana' => Icons.water_drop_rounded,
+    'shopee' => Icons.shopping_bag_rounded,
+    _ => Icons.account_balance_wallet_rounded,
+  };
 }
 
 class CurrencyInputFormatter extends TextInputFormatter {

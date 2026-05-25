@@ -7,11 +7,14 @@ import '../../../core/constants/app_theme.dart';
 import '../../providers/dashboard_providers.dart';
 import '../../providers/budget_providers.dart';
 import '../../providers/category_providers.dart';
+import '../../providers/wallet_provider.dart';
+import '../../../domain/entities/wallet.dart';
 import '../../providers/user_provider.dart';
 import '../../../domain/entities/budget_entity.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../main_shell.dart';
 import '../budget/budget_screen.dart';
+import '../wallet/wallet_list_screen.dart';
 import '../../../core/utils/icon_utils.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -20,7 +23,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
-    
+
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -31,6 +34,8 @@ class DashboardScreen extends ConsumerWidget {
               _buildHeader(context, ref, now),
               const SizedBox(height: 24),
               _buildBalanceCard(context, ref, now),
+              const SizedBox(height: 24),
+              _buildWalletSection(context, ref),
               const SizedBox(height: 24),
               _buildBudgetSection(context, ref, now),
               const SizedBox(height: 24),
@@ -43,11 +48,18 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context, WidgetRef ref, DateTime now) {
-    final monthFormat = DateFormat('MMMM yyyy', 'id_ID'); // Will fallback if locale not initialized
+    final monthFormat = DateFormat(
+      'MMMM yyyy',
+      'id_ID',
+    ); // Will fallback if locale not initialized
     final userState = ref.watch(userProvider);
-    final greetingName = userState.name.isNotEmpty ? userState.name.split(' ').first : '';
-    final greetingText = greetingName.isNotEmpty ? 'Halo, $greetingName 👋' : 'Halo!';
-    
+    final greetingName = userState.name.isNotEmpty
+        ? userState.name.split(' ').first
+        : '';
+    final greetingText = greetingName.isNotEmpty
+        ? 'Halo, $greetingName 👋'
+        : 'Halo!';
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -56,16 +68,16 @@ class DashboardScreen extends ConsumerWidget {
           children: [
             Text(
               greetingText,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
             Text(
               monthFormat.format(now),
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -79,8 +91,14 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildBalanceCard(BuildContext context, WidgetRef ref, DateTime now) {
     final balanceAsync = ref.watch(currentBalanceProvider);
-    final monthlyAsync = ref.watch(combinedMonthlyTotalProvider((month: now.month, year: now.year)));
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
+    final monthlyAsync = ref.watch(
+      combinedMonthlyTotalProvider((month: now.month, year: now.year)),
+    );
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0,
+    );
 
     return Container(
       width: double.infinity,
@@ -118,7 +136,8 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ),
             loading: () => _buildShimmerText(context, width: 150, height: 32),
-            error: (e, st) => const Text('Error', style: TextStyle(color: Colors.white)),
+            error: (e, st) =>
+                const Text('Error', style: TextStyle(color: Colors.white)),
           ),
           const SizedBox(height: 24),
           Row(
@@ -131,20 +150,35 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.arrow_downward, color: Colors.white70, size: 16),
+                        Icon(
+                          Icons.arrow_downward,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
                         SizedBox(width: 4),
-                        Text('Pemasukan', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text(
+                          'Pemasukan',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     monthlyAsync.when(
                       data: (totals) => Text(
                         currencyFormat.format(totals.income),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      loading: () => _buildShimmerText(context, width: 80, height: 16),
-                      error: (e, st) => const Text('Error', style: TextStyle(color: Colors.white)),
+                      loading: () =>
+                          _buildShimmerText(context, width: 80, height: 16),
+                      error: (e, st) => const Text(
+                        'Error',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -156,20 +190,35 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.arrow_upward, color: Colors.white70, size: 16),
+                        Icon(
+                          Icons.arrow_upward,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
                         SizedBox(width: 4),
-                        Text('Pengeluaran', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text(
+                          'Pengeluaran',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     monthlyAsync.when(
                       data: (totals) => Text(
                         currencyFormat.format(totals.expense),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
-                      loading: () => _buildShimmerText(context, width: 80, height: 16),
-                      error: (e, st) => const Text('Error', style: TextStyle(color: Colors.white)),
+                      loading: () =>
+                          _buildShimmerText(context, width: 80, height: 16),
+                      error: (e, st) => const Text(
+                        'Error',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -181,8 +230,112 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBudgetSection(BuildContext context, WidgetRef ref, DateTime now) {
-    final budgetsAsync = ref.watch(budgetsProvider(BudgetFilter(month: now.month, year: now.year)));
+  Widget _buildWalletSection(BuildContext context, WidgetRef ref) {
+    final walletsAsync = ref.watch(walletsProvider);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0,
+    );
+
+    return walletsAsync.when(
+      data: (wallets) {
+        double total = 0;
+        final walletsWithBalance = wallets.map((wallet) {
+          final balance = ref
+              .watch(walletBalanceProvider(wallet.id))
+              .valueOrNull;
+          total += balance ?? wallet.currentBalance ?? wallet.initialBalance;
+          return wallet.copyWith(currentBalance: balance);
+        }).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Dompet Saya',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const WalletListScreen(),
+                      ),
+                    );
+                  },
+                  child: Text(wallets.isEmpty ? 'Tambah' : 'Lihat Semua'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Total saldo dompet',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    currencyFormat.format(total),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  if (walletsWithBalance.isEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      'Belum ada dompet aktif.',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 12),
+                    ...walletsWithBalance
+                        .take(3)
+                        .map((wallet) => _DashboardWalletTile(wallet: wallet)),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => _buildWalletSectionShimmer(context),
+      error: (_, _) => const Text('Gagal memuat dompet.'),
+    );
+  }
+
+  Widget _buildBudgetSection(
+    BuildContext context,
+    WidgetRef ref,
+    DateTime now,
+  ) {
+    final budgetsAsync = ref.watch(
+      budgetsProvider(BudgetFilter(month: now.month, year: now.year)),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,13 +343,23 @@ class DashboardScreen extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Anggaran Bulan Ini', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Anggaran Bulan Ini',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
             budgetsAsync.when(
               data: (budgets) => TextButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const BudgetScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const BudgetScreen()),
+                  );
                 },
-                child: Text(budgets.isEmpty ? 'Kelola Anggaran' : 'Lihat Semua'),
+                child: Text(
+                  budgets.isEmpty ? 'Kelola Anggaran' : 'Lihat Semua',
+                ),
               ),
               loading: () => const SizedBox.shrink(),
               error: (_, _) => const SizedBox.shrink(),
@@ -212,7 +375,9 @@ class DashboardScreen extends ConsumerWidget {
                 return Center(
                   child: Text(
                     'Belum ada anggaran. Atur di menu Statistik.',
-                    style: TextStyle(color: Theme.of(context).colorScheme.outline),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   ),
                 );
               }
@@ -229,7 +394,8 @@ class DashboardScreen extends ConsumerWidget {
               itemCount: 3,
               itemBuilder: (context, index) => const _BudgetCardShimmer(),
             ),
-            error: (e, st) => const Center(child: Text('Gagal memuat anggaran.')),
+            error: (e, st) =>
+                const Center(child: Text('Gagal memuat anggaran.')),
           ),
         ),
       ],
@@ -238,7 +404,11 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildRecentTransactions(BuildContext context, WidgetRef ref) {
     final recentAsync = ref.watch(recentTransactionsProvider);
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0,
+    );
     final dateFormat = DateFormat('dd MMM yyyy', 'id_ID');
 
     return Column(
@@ -247,12 +417,17 @@ class DashboardScreen extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Transaksi Terakhir', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+            Text(
+              'Transaksi Terakhir',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
             TextButton(
               onPressed: () {
                 ref.read(selectedTabIndexProvider.notifier).state = 1;
               },
-              child: const Text('Lihat Semua')
+              child: const Text('Lihat Semua'),
             ),
           ],
         ),
@@ -265,7 +440,9 @@ class DashboardScreen extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     'Belum ada transaksi.',
-                    style: TextStyle(color: Theme.of(context).colorScheme.outline),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   ),
                 ),
               );
@@ -286,9 +463,14 @@ class DashboardScreen extends ConsumerWidget {
                     backgroundColor: color.withValues(alpha: 0.2),
                     child: Icon(IconUtils.getIcon(tx.categoryIcon), size: 20),
                   ),
-                  title: Text(tx.categoryName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(
+                    tx.categoryName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   subtitle: Text(
-                    tx.note != null && tx.note!.isNotEmpty ? tx.note! : dateFormat.format(tx.date),
+                    tx.note != null && tx.note!.isNotEmpty
+                        ? tx.note!
+                        : dateFormat.format(tx.date),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -313,7 +495,9 @@ class DashboardScreen extends ConsumerWidget {
               child: Row(
                 children: [
                   Shimmer.fromColors(
-                    baseColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                    baseColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHigh,
                     highlightColor: Theme.of(context).colorScheme.surface,
                     child: const CircleAvatar(radius: 20),
                   ),
@@ -322,24 +506,51 @@ class DashboardScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildShimmerText(context, width: 100, height: 14, baseColor: Theme.of(context).colorScheme.surfaceContainerHighest),
+                        _buildShimmerText(
+                          context,
+                          width: 100,
+                          height: 14,
+                          baseColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                        ),
                         const SizedBox(height: 8),
-                        _buildShimmerText(context, width: 150, height: 12, baseColor: Theme.of(context).colorScheme.surfaceContainerHighest),
+                        _buildShimmerText(
+                          context,
+                          width: 150,
+                          height: 12,
+                          baseColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                        ),
                       ],
                     ),
                   ),
-                  _buildShimmerText(context, width: 80, height: 14, baseColor: Theme.of(context).colorScheme.surfaceContainerHighest),
+                  _buildShimmerText(
+                    context,
+                    width: 80,
+                    height: 14,
+                    baseColor: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                  ),
                 ],
               ),
             ),
           ),
-          error: (e, st) => const Center(child: Text('Gagal memuat transaksi.')),
+          error: (e, st) =>
+              const Center(child: Text('Gagal memuat transaksi.')),
         ),
       ],
     );
   }
 
-  Widget _buildShimmerText(BuildContext context, {required double width, required double height, Color? baseColor}) {
+  Widget _buildShimmerText(
+    BuildContext context, {
+    required double width,
+    required double height,
+    Color? baseColor,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Shimmer.fromColors(
       baseColor: baseColor ?? colorScheme.surfaceContainerHighest,
@@ -372,10 +583,16 @@ class _BudgetCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesStreamProvider);
-    
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
+
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0,
+    );
     final spent = budget.spentAmount ?? 0.0;
-    final percent = budget.limitAmount > 0 ? (spent / budget.limitAmount).clamp(0.0, 1.0) : 0.0;
+    final percent = budget.limitAmount > 0
+        ? (spent / budget.limitAmount).clamp(0.0, 1.0)
+        : 0.0;
     final isWarning = percent > 0.8;
 
     return Container(
@@ -393,17 +610,25 @@ class _BudgetCard extends ConsumerWidget {
           ),
         ],
         border: Border.all(
-          color: isWarning ? Colors.red.withValues(alpha: 0.3) : Colors.transparent,
+          color: isWarning
+              ? Colors.red.withValues(alpha: 0.3)
+              : Colors.transparent,
         ),
       ),
       child: categoriesAsync.when(
         data: (categories) {
           final category = categories.firstWhere(
             (c) => c.id == budget.categoryId,
-            orElse: () => const CategoryEntity(id: 0, name: 'Unknown', icon: 0xe8fd, color: '#000000', type: 'expense'), // Icons.help_outline
+            orElse: () => const CategoryEntity(
+              id: 0,
+              name: 'Unknown',
+              icon: 0xe8fd,
+              color: '#000000',
+              type: 'expense',
+            ), // Icons.help_outline
           );
           Color catColor = _parseColor(category.color);
-          
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -437,13 +662,18 @@ class _BudgetCard extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 'dari ${currencyFormat.format(budget.limitAmount)}',
-                style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
               LinearProgressIndicator(
                 value: percent,
-                backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHigh,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   isWarning ? Colors.red : AppTheme.primaryGreen,
                 ),
@@ -467,6 +697,68 @@ class _BudgetCard extends ConsumerWidget {
   }
 }
 
+class _DashboardWalletTile extends StatelessWidget {
+  final Wallet wallet;
+
+  const _DashboardWalletTile({required this.wallet});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _parseColor(wallet.colorHex);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 18,
+            backgroundColor: color.withValues(alpha: 0.14),
+            child: Icon(_walletIcon(wallet.iconName), color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              wallet.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Text(
+            currencyFormat.format(
+              wallet.currentBalance ?? wallet.initialBalance,
+            ),
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _parseColor(String hex) {
+    return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
+  }
+
+  IconData _walletIcon(String name) {
+    return switch (name) {
+      'cash' => Icons.payments_rounded,
+      'mandiri' => Icons.account_balance_rounded,
+      'bri' => Icons.account_balance_rounded,
+      'bca' => Icons.account_balance_rounded,
+      'ovo' => Icons.account_balance_wallet_rounded,
+      'gopay' => Icons.motorcycle_rounded,
+      'dana' => Icons.water_drop_rounded,
+      'shopee' => Icons.shopping_bag_rounded,
+      _ => Icons.account_balance_wallet_rounded,
+    };
+  }
+}
+
 class _BudgetCardShimmer extends StatelessWidget {
   const _BudgetCardShimmer();
 
@@ -479,7 +771,9 @@ class _BudgetCardShimmer extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHigh),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.surfaceContainerHigh,
+        ),
       ),
       child: Shimmer.fromColors(
         baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
@@ -491,18 +785,84 @@ class _BudgetCardShimmer extends StatelessWidget {
               children: [
                 const CircleAvatar(radius: 16),
                 const SizedBox(width: 8),
-                Container(width: 60, height: 12, color: Theme.of(context).colorScheme.surface),
+                Container(
+                  width: 60,
+                  height: 12,
+                  color: Theme.of(context).colorScheme.surface,
+                ),
               ],
             ),
             const Spacer(),
-            Container(width: 80, height: 14, color: Theme.of(context).colorScheme.surface),
+            Container(
+              width: 80,
+              height: 14,
+              color: Theme.of(context).colorScheme.surface,
+            ),
             const SizedBox(height: 4),
-            Container(width: 100, height: 10, color: Theme.of(context).colorScheme.surface),
+            Container(
+              width: 100,
+              height: 10,
+              color: Theme.of(context).colorScheme.surface,
+            ),
             const SizedBox(height: 8),
-            Container(width: double.infinity, height: 4, color: Theme.of(context).colorScheme.surface),
+            Container(
+              width: double.infinity,
+              height: 4,
+              color: Theme.of(context).colorScheme.surface,
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+Widget _buildWalletSectionShimmer(BuildContext context) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Dompet Saya',
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(width: 80, height: 32),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+        child: Shimmer.fromColors(
+          baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          highlightColor: Theme.of(context).colorScheme.surface,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(width: 120, height: 12, color: Colors.white),
+              const SizedBox(height: 8),
+              Container(width: 180, height: 24, color: Colors.white),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                height: 36,
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
 }
