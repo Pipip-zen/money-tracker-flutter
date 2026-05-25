@@ -14,6 +14,7 @@ import '../../../domain/entities/budget_entity.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../main_shell.dart';
 import '../budget/budget_screen.dart';
+import '../wallet/wallet_detail_screen.dart';
 import '../wallet/wallet_list_screen.dart';
 import '../../../core/utils/icon_utils.dart';
 
@@ -90,7 +91,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildBalanceCard(BuildContext context, WidgetRef ref, DateTime now) {
-    final balanceAsync = ref.watch(currentBalanceProvider);
+    final walletsAsync = ref.watch(walletsProvider);
     final monthlyAsync = ref.watch(
       combinedMonthlyTotalProvider((month: now.month, year: now.year)),
     );
@@ -126,15 +127,27 @@ class DashboardScreen extends ConsumerWidget {
             style: TextStyle(color: Colors.white70, fontSize: 14),
           ),
           const SizedBox(height: 8),
-          balanceAsync.when(
-            data: (balance) => Text(
-              currencyFormat.format(balance),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          walletsAsync.when(
+            data: (wallets) {
+              final balance = wallets.fold<double>(0, (sum, wallet) {
+                final walletBalance = ref
+                    .watch(walletBalanceProvider(wallet.id))
+                    .valueOrNull;
+                return sum +
+                    (walletBalance ??
+                        wallet.currentBalance ??
+                        wallet.initialBalance);
+              });
+
+              return Text(
+                currencyFormat.format(balance),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
             loading: () => _buildShimmerText(context, width: 150, height: 32),
             error: (e, st) =>
                 const Text('Error', style: TextStyle(color: Colors.white)),
@@ -312,10 +325,30 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     ),
                   ] else ...[
-                    const SizedBox(height: 12),
-                    ...walletsWithBalance
-                        .take(3)
-                        .map((wallet) => _DashboardWalletTile(wallet: wallet)),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 124,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: walletsWithBalance.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 12),
+                        itemBuilder: (context, index) {
+                          final wallet = walletsWithBalance[index];
+                          return _DashboardWalletTile(
+                            wallet: wallet,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      WalletDetailScreen(walletId: wallet.id),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ],
               ),
@@ -699,8 +732,9 @@ class _BudgetCard extends ConsumerWidget {
 
 class _DashboardWalletTile extends StatelessWidget {
   final Wallet wallet;
+  final VoidCallback onTap;
 
-  const _DashboardWalletTile({required this.wallet});
+  const _DashboardWalletTile({required this.wallet, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -711,31 +745,57 @@ class _DashboardWalletTile extends StatelessWidget {
       decimalDigits: 0,
     );
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: color.withValues(alpha: 0.14),
-            child: Icon(_walletIcon(wallet.iconName), color: color, size: 18),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              wallet.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+    return SizedBox(
+      width: 172,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
             ),
           ),
-          Text(
-            currencyFormat.format(
-              wallet.currentBalance ?? wallet.initialBalance,
-            ),
-            style: const TextStyle(fontWeight: FontWeight.w700),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: color.withValues(alpha: 0.14),
+                child: Icon(
+                  _walletIcon(wallet.iconName),
+                  color: color,
+                  size: 18,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                wallet.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                currencyFormat.format(
+                  wallet.currentBalance ?? wallet.initialBalance,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

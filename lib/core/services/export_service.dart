@@ -7,34 +7,53 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 
 import '../../domain/entities/transaction_entity.dart';
+import '../../domain/entities/wallet.dart';
 
 class ExportService {
   static final _dateFormat = DateFormat('dd/MM/yyyy', 'id_ID');
-  static final _currency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
+  static final _currency = NumberFormat.currency(
+    locale: 'id_ID',
+    symbol: 'Rp',
+    decimalDigits: 0,
+  );
   static final _monthFormat = DateFormat('MMMM yyyy', 'id_ID');
 
   // ─── CSV ───────────────────────────────────────────────────────────────────
 
-  static Future<File> exportToCSV(List<TransactionEntity> transactions) async {
+  static Future<File> exportToCSV(
+    List<TransactionEntity> transactions, {
+    Map<int, Wallet> walletsById = const {},
+  }) async {
     final buffer = StringBuffer();
 
     // Header
-    buffer.writeln('Tanggal,Tipe,Kategori,Jumlah,Catatan');
+    buffer.writeln('Tanggal,Tipe,Kategori,Dompet,Dompet Tujuan,Jumlah,Catatan');
 
     for (final tx in transactions) {
       final note = (tx.note ?? '').replaceAll('"', '""');
       final catName = tx.categoryName.replaceAll('"', '""');
+      final fromWallet = (walletsById[tx.walletId]?.name ?? '-').replaceAll(
+        '"',
+        '""',
+      );
+      final toWallet = (walletsById[tx.toWalletId]?.name ?? '-').replaceAll(
+        '"',
+        '""',
+      );
       buffer.writeln(
         '${_dateFormat.format(tx.date)},'
-        '${tx.type == 'income' ? 'Pemasukan' : 'Pengeluaran'},'
+        '${_typeLabel(tx.type)},'
         '"$catName",'
+        '"$fromWallet",'
+        '"$toWallet",'
         '${tx.amount},'
         '"$note"',
       );
     }
 
     final dir = await getApplicationDocumentsDirectory();
-    final fileName = 'transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
+    final fileName =
+        'transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
     final file = File('${dir.path}/$fileName');
     await file.writeAsString(buffer.toString());
 
@@ -47,8 +66,9 @@ class ExportService {
   static Future<File> exportToPDF(
     List<TransactionEntity> transactions,
     int month,
-    int year,
-  ) async {
+    int year, {
+    Map<int, Wallet> walletsById = const {},
+  }) async {
     final monthLabel = _monthFormat.format(DateTime(year, month));
     final doc = pw.Document();
 
@@ -92,7 +112,10 @@ class ExportService {
             children: [
               _pdfHeaderRow(['Keterangan', 'Jumlah']),
               _pdfDataRow(['Total Pemasukan', _currency.format(totalIncome)]),
-              _pdfDataRow(['Total Pengeluaran', _currency.format(totalExpense)]),
+              _pdfDataRow([
+                'Total Pengeluaran',
+                _currency.format(totalExpense),
+              ]),
               _pdfDataRow(['Saldo Bersih', _currency.format(netBalance)]),
             ],
           ),
@@ -111,17 +134,31 @@ class ExportService {
               1: const pw.FlexColumnWidth(2),
               2: const pw.FlexColumnWidth(2.5),
               3: const pw.FlexColumnWidth(2.5),
-              4: const pw.FlexColumnWidth(3),
+              4: const pw.FlexColumnWidth(2.5),
+              5: const pw.FlexColumnWidth(2.5),
+              6: const pw.FlexColumnWidth(3),
             },
             children: [
-              _pdfHeaderRow(['Tanggal', 'Tipe', 'Kategori', 'Jumlah', 'Catatan']),
-              ...transactions.map((tx) => _pdfDataRow([
-                _dateFormat.format(tx.date),
-                tx.type == 'income' ? 'Pemasukan' : 'Pengeluaran',
-                tx.categoryName,
-                _currency.format(tx.amount),
-                tx.note ?? '-',
-              ])),
+              _pdfHeaderRow([
+                'Tanggal',
+                'Tipe',
+                'Kategori',
+                'Dompet',
+                'Tujuan',
+                'Jumlah',
+                'Catatan',
+              ]),
+              ...transactions.map(
+                (tx) => _pdfDataRow([
+                  _dateFormat.format(tx.date),
+                  _typeLabel(tx.type),
+                  tx.categoryName,
+                  walletsById[tx.walletId]?.name ?? '-',
+                  walletsById[tx.toWalletId]?.name ?? '-',
+                  _currency.format(tx.amount),
+                  tx.note ?? '-',
+                ]),
+              ),
             ],
           ),
         ],
@@ -129,7 +166,8 @@ class ExportService {
     );
 
     final dir = await getApplicationDocumentsDirectory();
-    final fileName = 'laporan_${month}_${year}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+    final fileName =
+        'laporan_${month}_${year}_${DateTime.now().millisecondsSinceEpoch}.pdf';
     final file = File('${dir.path}/$fileName');
     await file.writeAsBytes(await doc.save());
 
@@ -142,22 +180,34 @@ class ExportService {
   static pw.TableRow _pdfHeaderRow(List<String> cells) {
     return pw.TableRow(
       decoration: const pw.BoxDecoration(color: PdfColors.green800),
-      children: cells.map((cell) => pw.Padding(
-        padding: const pw.EdgeInsets.all(6),
-        child: pw.Text(
-          cell,
-          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white, fontSize: 10),
-        ),
-      )).toList(),
+      children: cells
+          .map(
+            (cell) => pw.Padding(
+              padding: const pw.EdgeInsets.all(6),
+              child: pw.Text(
+                cell,
+                style: pw.TextStyle(
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.white,
+                  fontSize: 10,
+                ),
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
   static pw.TableRow _pdfDataRow(List<String> cells) {
     return pw.TableRow(
-      children: cells.map((cell) => pw.Padding(
-        padding: const pw.EdgeInsets.all(6),
-        child: pw.Text(cell, style: const pw.TextStyle(fontSize: 9)),
-      )).toList(),
+      children: cells
+          .map(
+            (cell) => pw.Padding(
+              padding: const pw.EdgeInsets.all(6),
+              child: pw.Text(cell, style: const pw.TextStyle(fontSize: 9)),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -168,5 +218,14 @@ class ExportService {
         text: 'Ekspor dari Money Tracker',
       ),
     );
+  }
+
+  static String _typeLabel(String type) {
+    return switch (type) {
+      'income' => 'Pemasukan',
+      'expense' => 'Pengeluaran',
+      'transfer' => 'Transfer',
+      _ => type,
+    };
   }
 }

@@ -9,11 +9,15 @@ import '../../../domain/entities/category_entity.dart';
 import '../../../data/database/app_database.dart';
 import '../../../presentation/providers/category_providers.dart';
 import '../../../presentation/providers/database_provider.dart';
+import '../../../presentation/providers/wallet_provider.dart';
+import '../../widgets/wallet/wallet_picker_sheet.dart';
 import '../../../core/utils/icon_utils.dart';
 
 // --------------- PROVIDERS ---------------
 
-final _recurringStreamProvider = StreamProvider<List<RecurringTransaction>>((ref) {
+final _recurringStreamProvider = StreamProvider<List<RecurringTransaction>>((
+  ref,
+) {
   final db = ref.watch(databaseProvider);
   return db.recurringTransactionDao.watchAllRecurring();
 });
@@ -30,7 +34,10 @@ class RecurringScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transaksi Rutin', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Transaksi Rutin',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         actions: [
           IconButton(
@@ -49,7 +56,10 @@ class RecurringScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               itemCount: items.length,
               itemBuilder: (context, index) {
-                return _RecurringTile(item: items[index], categories: categories);
+                return _RecurringTile(
+                  item: items[index],
+                  categories: categories,
+                );
               },
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -81,12 +91,27 @@ class RecurringScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.repeat, size: 80, color: Theme.of(context).colorScheme.surfaceContainerHigh),
+          Icon(
+            Icons.repeat,
+            size: 80,
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+          ),
           const SizedBox(height: 16),
-          Text('Belum ada transaksi rutin', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 16)),
+          Text(
+            'Belum ada transaksi rutin',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.outline,
+              fontSize: 16,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('Tambah transaksi yang berulang\nseperti gaji atau tagihan bulanan.',
-              textAlign: TextAlign.center, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+          Text(
+            'Tambah transaksi yang berulang\nseperti gaji atau tagihan bulanan.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -109,9 +134,12 @@ class _RecurringTile extends ConsumerWidget {
 
   String _frequencyLabel(String freq) {
     switch (freq) {
-      case 'daily': return 'Harian';
-      case 'weekly': return 'Mingguan';
-      default: return 'Bulanan';
+      case 'daily':
+        return 'Harian';
+      case 'weekly':
+        return 'Mingguan';
+      default:
+        return 'Bulanan';
     }
   }
 
@@ -127,9 +155,17 @@ class _RecurringTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final db = ref.read(databaseProvider);
-    final category = categories.where((c) => c.id == item.categoryId).firstOrNull;
-    final catColor = category != null ? _parseColor(category.color) : Theme.of(context).colorScheme.outline;
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp', decimalDigits: 0);
+    final category = categories
+        .where((c) => c.id == item.categoryId)
+        .firstOrNull;
+    final catColor = category != null
+        ? _parseColor(category.color)
+        : Theme.of(context).colorScheme.outline;
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp',
+      decimalDigits: 0,
+    );
     final dateFormat = DateFormat('dd MMM yyyy', 'id_ID');
 
     return Dismissible(
@@ -140,16 +176,26 @@ class _RecurringTile extends ConsumerWidget {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Hapus Transaksi Rutin'),
-            content: const Text('Apakah Anda yakin ingin menghapus transaksi rutin ini?'),
+            content: const Text(
+              'Apakah Anda yakin ingin menghapus transaksi rutin ini?',
+            ),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
-              TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Hapus', style: TextStyle(color: Colors.red))),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Batal'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+              ),
             ],
           ),
         );
       },
       onDismissed: (direction) async {
-        await (db.delete(db.recurringTransactions)..where((t) => t.id.equals(item.id))).go();
+        await (db.delete(
+          db.recurringTransactions,
+        )..where((t) => t.id.equals(item.id))).go();
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Transaksi rutin dihapus')),
@@ -167,18 +213,57 @@ class _RecurringTile extends ConsumerWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
-          border: Border.all(color: item.isActive ? Colors.transparent : Theme.of(context).colorScheme.surfaceContainerHigh),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(
+                context,
+              ).colorScheme.shadow.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(
+            color: item.isActive
+                ? Colors.transparent
+                : Theme.of(context).colorScheme.surfaceContainerHigh,
+          ),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
           leading: CircleAvatar(
-            backgroundColor: catColor.withValues(alpha: item.isActive ? 0.2 : 0.07),
-            child: category != null ? Icon(IconUtils.getIcon(category.icon), size: 20, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant) : Icon(Icons.monetization_on, size: 20, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant),
+            backgroundColor: catColor.withValues(
+              alpha: item.isActive ? 0.2 : 0.07,
+            ),
+            child: category != null
+                ? Icon(
+                    IconUtils.getIcon(category.icon),
+                    size: 20,
+                    color: item.isActive
+                        ? null
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  )
+                : Icon(
+                    Icons.monetization_on,
+                    size: 20,
+                    color: item.isActive
+                        ? null
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
           ),
           title: Row(
             children: [
-              Text(category?.name ?? 'Kategori', style: TextStyle(fontWeight: FontWeight.bold, color: item.isActive ? null : Theme.of(context).colorScheme.onSurfaceVariant)),
+              Text(
+                category?.name ?? 'Kategori',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: item.isActive
+                      ? null
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -186,7 +271,14 @@ class _RecurringTile extends ConsumerWidget {
                   color: AppTheme.primaryGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(_frequencyLabel(item.frequency), style: const TextStyle(fontSize: 11, color: AppTheme.primaryGreen, fontWeight: FontWeight.bold)),
+                child: Text(
+                  _frequencyLabel(item.frequency),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.primaryGreen,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -199,11 +291,19 @@ class _RecurringTile extends ConsumerWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: item.type == 'income' ? AppTheme.accentGreen : Colors.red,
+                  color: item.type == 'income'
+                      ? AppTheme.accentGreen
+                      : Colors.red,
                 ),
               ),
               const SizedBox(height: 2),
-              Text('Jatuh tempo: ${dateFormat.format(item.nextDueDate)}', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+              Text(
+                'Jatuh tempo: ${dateFormat.format(item.nextDueDate)}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
           ),
           trailing: Switch(
@@ -237,14 +337,19 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   CategoryEntity? _selectedCategory;
+  int? _selectedWalletId;
+  bool _didSetDefaultWallet = false;
 
   final List<String> _frequencies = ['daily', 'weekly', 'monthly'];
 
   String _freqLabel(String f) {
     switch (f) {
-      case 'daily': return 'Harian';
-      case 'weekly': return 'Mingguan';
-      default: return 'Bulanan';
+      case 'daily':
+        return 'Harian';
+      case 'weekly':
+        return 'Mingguan';
+      default:
+        return 'Bulanan';
     }
   }
 
@@ -262,8 +367,13 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
       _selectedType = e.type;
       _selectedFrequency = e.frequency;
       _startDate = e.nextDueDate;
-      _amountController.text = NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(e.amount).trim();
+      _amountController.text = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: '',
+        decimalDigits: 0,
+      ).format(e.amount).trim();
       _noteController.text = e.note ?? '';
+      _selectedWalletId = e.walletId;
     } else {
       _selectedType = 'expense';
       _selectedFrequency = 'monthly';
@@ -283,21 +393,38 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
     final amount = double.tryParse(amountText) ?? 0.0;
 
     if (amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Jumlah harus lebih dari 0')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Jumlah harus lebih dari 0')),
+      );
       return;
     }
     if (_selectedCategory == null && widget.existing == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pilih kategori terlebih dahulu')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih kategori terlebih dahulu')),
+      );
+      return;
+    }
+    if (_selectedWalletId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pilih dompet terlebih dahulu')),
+      );
       return;
     }
 
     final db = ref.read(databaseProvider);
     final companion = RecurringTransactionsCompanion(
-      id: widget.existing != null ? Value(widget.existing!.id) : const Value.absent(),
+      id: widget.existing != null
+          ? Value(widget.existing!.id)
+          : const Value.absent(),
       amount: Value(amount),
-      note: Value(_noteController.text.trim().isEmpty ? null : _noteController.text.trim()),
+      note: Value(
+        _noteController.text.trim().isEmpty
+            ? null
+            : _noteController.text.trim(),
+      ),
       type: Value(_selectedType),
       categoryId: Value(_selectedCategory?.id ?? widget.existing!.categoryId),
+      walletId: Value(_selectedWalletId),
       frequency: Value(_selectedFrequency),
       nextDueDate: Value(_startDate),
       isActive: const Value(true),
@@ -311,13 +438,18 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Berhasil disimpan!'), backgroundColor: AppTheme.accentGreen),
+          const SnackBar(
+            content: Text('Berhasil disimpan!'),
+            backgroundColor: AppTheme.accentGreen,
+          ),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Gagal: $e')));
       }
     }
   }
@@ -325,10 +457,24 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
   @override
   Widget build(BuildContext context) {
     final categoriesAsync = ref.watch(categoriesByTypeProvider(_selectedType));
+    final defaultWallet = ref.watch(defaultWalletProvider);
+    final wallets = ref.watch(walletsProvider).valueOrNull ?? const [];
     final dateFormat = DateFormat('dd MMMM yyyy', 'id_ID');
 
+    defaultWallet.whenData((wallet) {
+      if (_didSetDefaultWallet || _selectedWalletId != null || wallet == null) {
+        return;
+      }
+      _didSetDefaultWallet = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _selectedWalletId = wallet.id);
+      });
+    });
+
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
@@ -341,13 +487,24 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Center(
-                child: Container(height: 4, width: 40,
-                  decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHigh, borderRadius: BorderRadius.circular(2))),
+                child: Container(
+                  height: 4,
+                  width: 40,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               Text(
-                widget.existing == null ? 'Tambah Transaksi Rutin' : 'Ubah Transaksi Rutin',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                widget.existing == null
+                    ? 'Tambah Transaksi Rutin'
+                    : 'Ubah Transaksi Rutin',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
@@ -359,7 +516,10 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
                 ],
                 selected: {_selectedType},
                 onSelectionChanged: (s) {
-                  setState(() { _selectedType = s.first; _selectedCategory = null; });
+                  setState(() {
+                    _selectedType = s.first;
+                    _selectedCategory = null;
+                  });
                 },
               ),
               const SizedBox(height: 16),
@@ -367,17 +527,72 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
               TextField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly, _CurrencyFormatter()],
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  _CurrencyFormatter(),
+                ],
                 decoration: InputDecoration(
                   labelText: 'Jumlah',
                   prefixText: 'Rp ',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 16),
 
-              const Text('Frekuensi', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Dompet',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () async {
+                  final selected = await WalletPickerSheet.show(
+                    context,
+                    selectedWalletId: _selectedWalletId,
+                  );
+                  if (selected != null) {
+                    setState(() => _selectedWalletId = selected);
+                  }
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.account_balance_wallet_rounded),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          wallets
+                                  .where(
+                                    (wallet) => wallet.id == _selectedWalletId,
+                                  )
+                                  .firstOrNull
+                                  ?.name ??
+                              'Pilih dompet',
+                        ),
+                      ),
+                      const Icon(Icons.keyboard_arrow_down_rounded),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              const Text(
+                'Frekuensi',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               Row(
                 children: _frequencies.map((f) {
@@ -388,8 +603,11 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
                       child: ChoiceChip(
                         label: Center(child: Text(_freqLabel(f))),
                         selected: isSelected,
-                        selectedColor: AppTheme.accentGreen.withValues(alpha: 0.2),
-                        onSelected: (_) => setState(() => _selectedFrequency = f),
+                        selectedColor: AppTheme.accentGreen.withValues(
+                          alpha: 0.2,
+                        ),
+                        onSelected: (_) =>
+                            setState(() => _selectedFrequency = f),
                       ),
                     ),
                   );
@@ -397,26 +615,46 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
               ),
               const SizedBox(height: 16),
 
-              const Text('Kategori', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                'Kategori',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 8),
               categoriesAsync.when(
                 data: (cats) => SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: cats.map((cat) {
-                      final isSelected = _selectedCategory?.id == cat.id ||
-                          (widget.existing != null && widget.existing?.categoryId == cat.id && _selectedCategory == null);
+                      final isSelected =
+                          _selectedCategory?.id == cat.id ||
+                          (widget.existing != null &&
+                              widget.existing?.categoryId == cat.id &&
+                              _selectedCategory == null);
                       final color = _parseColor(cat.color);
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
-                          label: Row(mainAxisSize: MainAxisSize.min, children: [Icon(IconUtils.getIcon(cat.icon), size: 18), const SizedBox(width: 6), Text(cat.name)]),
+                          label: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(IconUtils.getIcon(cat.icon), size: 18),
+                              const SizedBox(width: 6),
+                              Text(cat.name),
+                            ],
+                          ),
                           selected: isSelected,
-                          onSelected: (_) => setState(() => _selectedCategory = cat),
+                          onSelected: (_) =>
+                              setState(() => _selectedCategory = cat),
                           selectedColor: color.withValues(alpha: 0.2),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: isSelected ? color : Theme.of(context).colorScheme.surfaceContainerHigh),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? color
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceContainerHigh,
+                            ),
                           ),
                         ),
                       );
@@ -431,7 +669,10 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Tanggal Mulai', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Tanggal Mulai',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   TextButton.icon(
                     onPressed: () async {
                       final picked = await showDatePicker(
@@ -453,7 +694,9 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
                 controller: _noteController,
                 decoration: InputDecoration(
                   labelText: 'Catatan (Opsional)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -466,9 +709,14 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryGreen,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text('Simpan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Simpan',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -482,11 +730,23 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
 
 class _CurrencyFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     if (newValue.text.isEmpty) return newValue.copyWith(text: '');
-    final intValue = int.tryParse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
+    final intValue = int.tryParse(
+      newValue.text.replaceAll(RegExp(r'[^0-9]'), ''),
+    );
     if (intValue == null) return oldValue;
-    final newString = NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(intValue).trim();
-    return TextEditingValue(text: newString, selection: TextSelection.collapsed(offset: newString.length));
+    final newString = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: '',
+      decimalDigits: 0,
+    ).format(intValue).trim();
+    return TextEditingValue(
+      text: newString,
+      selection: TextSelection.collapsed(offset: newString.length),
+    );
   }
 }

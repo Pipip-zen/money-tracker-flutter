@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_theme.dart';
 import '../../../core/services/export_service.dart';
+import '../../../domain/entities/wallet.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/transaction_providers.dart';
+import '../../providers/wallet_provider.dart';
 import '../recurring/recurring_screen.dart';
 import '../wallet/wallet_list_screen.dart';
 import 'category_management_screen.dart';
@@ -36,9 +38,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
 
       if (isPdf) {
-        await ExportService.exportToPDF(txs, now.month, now.year);
+        await ExportService.exportToPDF(
+          txs,
+          now.month,
+          now.year,
+          walletsById: await _walletsById(),
+        );
       } else {
-        await ExportService.exportToCSV(txs);
+        await ExportService.exportToCSV(txs, walletsById: await _walletsById());
       }
     } catch (e) {
       if (mounted) {
@@ -94,7 +101,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           );
           return;
         }
-        await ExportService.exportToCSV(txs);
+        await ExportService.exportToCSV(txs, walletsById: await _walletsById());
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(
@@ -178,7 +185,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Icons.account_balance_wallet_rounded,
               color: AppTheme.accentGreen,
             ),
-            title: const Text('Dompet Saya'),
+            title: const Text('Kelola Dompet'),
             subtitle: const Text('Kelola dompet dan saldo'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
@@ -309,5 +316,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  Future<Map<int, Wallet>> _walletsById() async {
+    final wallets = await ref.read(walletRepositoryProvider).getAllWallets();
+    return {for (final wallet in wallets) wallet.id: wallet};
   }
 }

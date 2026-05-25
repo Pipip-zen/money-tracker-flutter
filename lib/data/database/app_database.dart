@@ -57,6 +57,7 @@ class RecurringTransactions extends Table {
   TextColumn get frequency => text()(); // 'daily' | 'weekly' | 'monthly'
   DateTimeColumn get nextDueDate => dateTime()();
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  IntColumn get walletId => integer().nullable().references(WalletTable, #id)();
 }
 
 @DriftDatabase(
@@ -80,7 +81,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.fromExecutor(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -123,6 +124,16 @@ class AppDatabase extends _$AppDatabase {
             await customStatement(
               'UPDATE transactions SET wallet_id = ? WHERE wallet_id IS NULL',
               [defaultWalletId],
+            );
+          }
+
+          if (from < 5) {
+            await _addColumnIfMissing(
+              m,
+              recurringTransactions,
+              'recurring_transactions',
+              'wallet_id',
+              recurringTransactions.walletId,
             );
           }
         }
@@ -168,10 +179,26 @@ class AppDatabase extends _$AppDatabase {
     String columnName,
     GeneratedColumn column,
   ) async {
-    final columns = await customSelect('PRAGMA table_info(transactions)').get();
+    await _addColumnIfMissing(
+      migrator,
+      transactions,
+      'transactions',
+      columnName,
+      column,
+    );
+  }
+
+  Future<void> _addColumnIfMissing(
+    Migrator migrator,
+    TableInfo table,
+    String tableName,
+    String columnName,
+    GeneratedColumn column,
+  ) async {
+    final columns = await customSelect('PRAGMA table_info($tableName)').get();
     final exists = columns.any((row) => row.data['name'] == columnName);
     if (!exists) {
-      await migrator.addColumn(transactions, column);
+      await migrator.addColumn(table, column);
     }
   }
 }

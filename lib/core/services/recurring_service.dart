@@ -13,7 +13,8 @@ class RecurringService {
   factory RecurringService() => _instance;
   RecurringService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> runCheck() async {
     final dbFolder = await getApplicationDocumentsDirectory();
@@ -27,6 +28,9 @@ class RecurringService {
       int count = 0;
 
       for (final item in dueItems) {
+        final defaultWallet = await db.walletDao.getDefaultWallet();
+        final walletId = item.walletId ?? defaultWallet?.id;
+
         await db.transactionDao.insertTransaction(
           TransactionsCompanion(
             amount: Value(item.amount),
@@ -34,6 +38,7 @@ class RecurringService {
             date: Value(now),
             type: Value(item.type),
             categoryId: Value(item.categoryId),
+            walletId: Value(walletId),
           ),
         );
 
@@ -46,6 +51,7 @@ class RecurringService {
             note: Value(item.note),
             type: Value(item.type),
             categoryId: Value(item.categoryId),
+            walletId: Value(item.walletId),
             frequency: Value(item.frequency),
             nextDueDate: Value(nextDue),
             isActive: Value(item.isActive),
@@ -76,7 +82,9 @@ class RecurringService {
   }
 
   Future<void> _initializeNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     await _notifications.initialize(
       settings: const InitializationSettings(android: androidSettings),
     );

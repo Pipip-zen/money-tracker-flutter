@@ -6,6 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../core/constants/app_theme.dart';
 import '../../../domain/entities/transaction_entity.dart';
 import '../../providers/transaction_providers.dart';
+import '../../providers/wallet_provider.dart';
 import '../../widgets/monthly_comparison_card.dart';
 import '../budget/budget_screen.dart';
 import '../../../core/utils/icon_utils.dart';
@@ -25,6 +26,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   );
   int _touchedPieIndex = -1;
   bool _isLoaded = false;
+  int? _selectedWalletId;
 
   @override
   void initState() {
@@ -114,8 +116,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               ),
             ),
             _buildMonthSelector(),
+            _buildWalletFilter(),
             currentMonthAsync.when(
-              data: (txs) => _buildCurrentMonthStats(txs),
+              data: (txs) => _buildCurrentMonthStats(_filterByWallet(txs)),
               loading: () => const SizedBox(
                 height: 300,
                 child: Center(child: CircularProgressIndicator()),
@@ -124,7 +127,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             ),
             const Divider(height: 48, thickness: 8),
             sixMonthsAsync.when(
-              data: (txs) => _buildBarChart(txs, sixMonthsAgo),
+              data: (txs) => _buildBarChart(_filterByWallet(txs), sixMonthsAgo),
               loading: () => const SizedBox(
                 height: 300,
                 child: Center(child: CircularProgressIndicator()),
@@ -137,6 +140,56 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  List<TransactionEntity> _filterByWallet(List<TransactionEntity> txs) {
+    final walletId = _selectedWalletId;
+    if (walletId == null) return txs;
+    return txs.where((tx) {
+      return tx.walletId == walletId || tx.toWalletId == walletId;
+    }).toList();
+  }
+
+  Widget _buildWalletFilter() {
+    final walletsAsync = ref.watch(walletsProvider);
+
+    return walletsAsync.when(
+      data: (wallets) => SizedBox(
+        height: 44,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: const Text('Semua Dompet'),
+                selected: _selectedWalletId == null,
+                onSelected: (_) => setState(() {
+                  _selectedWalletId = null;
+                  _touchedPieIndex = -1;
+                }),
+              ),
+            ),
+            ...wallets.map(
+              (wallet) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(wallet.name),
+                  selected: _selectedWalletId == wallet.id,
+                  onSelected: (_) => setState(() {
+                    _selectedWalletId = wallet.id;
+                    _touchedPieIndex = -1;
+                  }),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      loading: () => const SizedBox(height: 44),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 
@@ -321,7 +374,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
         if (tx.type == 'income') {
           incomeData[index] += tx.amount;
           if (incomeData[index] > maxY) maxY = incomeData[index];
-        } else {
+        } else if (tx.type == 'expense') {
           expenseData[index] += tx.amount;
           if (expenseData[index] > maxY) maxY = expenseData[index];
         }

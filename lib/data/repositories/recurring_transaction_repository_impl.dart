@@ -4,32 +4,37 @@ import '../daos/recurring_transaction_dao.dart';
 import '../database/app_database.dart';
 import 'package:drift/drift.dart';
 
-class RecurringTransactionRepositoryImpl implements RecurringTransactionRepository {
+class RecurringTransactionRepositoryImpl
+    implements RecurringTransactionRepository {
   final RecurringTransactionDao _dao;
 
   RecurringTransactionRepositoryImpl(this._dao);
 
-  RecurringTransactionEntity _map(RecurringTransaction r) => RecurringTransactionEntity(
-    id: r.id,
-    amount: r.amount,
-    note: r.note,
-    type: r.type,
-    categoryId: r.categoryId,
-    frequency: r.frequency,
-    nextDueDate: r.nextDueDate,
-    isActive: r.isActive,
-  );
+  RecurringTransactionEntity _map(RecurringTransaction r) =>
+      RecurringTransactionEntity(
+        id: r.id,
+        amount: r.amount,
+        note: r.note,
+        type: r.type,
+        categoryId: r.categoryId,
+        walletId: r.walletId,
+        frequency: r.frequency,
+        nextDueDate: r.nextDueDate,
+        isActive: r.isActive,
+      );
 
-  RecurringTransactionsCompanion _unmap(RecurringTransactionEntity r) => RecurringTransactionsCompanion(
-    id: r.id == 0 ? const Value.absent() : Value(r.id),
-    amount: Value(r.amount),
-    note: Value(r.note),
-    type: Value(r.type),
-    categoryId: Value(r.categoryId),
-    frequency: Value(r.frequency),
-    nextDueDate: Value(r.nextDueDate),
-    isActive: Value(r.isActive),
-  );
+  RecurringTransactionsCompanion _unmap(RecurringTransactionEntity r) =>
+      RecurringTransactionsCompanion(
+        id: r.id == 0 ? const Value.absent() : Value(r.id),
+        amount: Value(r.amount),
+        note: Value(r.note),
+        type: Value(r.type),
+        categoryId: Value(r.categoryId),
+        walletId: Value(r.walletId),
+        frequency: Value(r.frequency),
+        nextDueDate: Value(r.nextDueDate),
+        isActive: Value(r.isActive),
+      );
 
   @override
   Stream<List<RecurringTransactionEntity>> watchAllRecurring() {

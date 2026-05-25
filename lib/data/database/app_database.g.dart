@@ -1993,6 +1993,20 @@ class $RecurringTransactionsTable extends RecurringTransactions
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _walletIdMeta = const VerificationMeta(
+    'walletId',
+  );
+  @override
+  late final GeneratedColumn<int> walletId = GeneratedColumn<int>(
+    'wallet_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES wallets (id)',
+    ),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -2003,6 +2017,7 @@ class $RecurringTransactionsTable extends RecurringTransactions
     frequency,
     nextDueDate,
     isActive,
+    walletId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2074,6 +2089,12 @@ class $RecurringTransactionsTable extends RecurringTransactions
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('wallet_id')) {
+      context.handle(
+        _walletIdMeta,
+        walletId.isAcceptableOrUnknown(data['wallet_id']!, _walletIdMeta),
+      );
+    }
     return context;
   }
 
@@ -2115,6 +2136,10 @@ class $RecurringTransactionsTable extends RecurringTransactions
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      walletId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}wallet_id'],
+      ),
     );
   }
 
@@ -2134,6 +2159,7 @@ class RecurringTransaction extends DataClass
   final String frequency;
   final DateTime nextDueDate;
   final bool isActive;
+  final int? walletId;
   const RecurringTransaction({
     required this.id,
     required this.amount,
@@ -2143,6 +2169,7 @@ class RecurringTransaction extends DataClass
     required this.frequency,
     required this.nextDueDate,
     required this.isActive,
+    this.walletId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2157,6 +2184,9 @@ class RecurringTransaction extends DataClass
     map['frequency'] = Variable<String>(frequency);
     map['next_due_date'] = Variable<DateTime>(nextDueDate);
     map['is_active'] = Variable<bool>(isActive);
+    if (!nullToAbsent || walletId != null) {
+      map['wallet_id'] = Variable<int>(walletId);
+    }
     return map;
   }
 
@@ -2170,6 +2200,9 @@ class RecurringTransaction extends DataClass
       frequency: Value(frequency),
       nextDueDate: Value(nextDueDate),
       isActive: Value(isActive),
+      walletId: walletId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletId),
     );
   }
 
@@ -2187,6 +2220,7 @@ class RecurringTransaction extends DataClass
       frequency: serializer.fromJson<String>(json['frequency']),
       nextDueDate: serializer.fromJson<DateTime>(json['nextDueDate']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      walletId: serializer.fromJson<int?>(json['walletId']),
     );
   }
   @override
@@ -2201,6 +2235,7 @@ class RecurringTransaction extends DataClass
       'frequency': serializer.toJson<String>(frequency),
       'nextDueDate': serializer.toJson<DateTime>(nextDueDate),
       'isActive': serializer.toJson<bool>(isActive),
+      'walletId': serializer.toJson<int?>(walletId),
     };
   }
 
@@ -2213,6 +2248,7 @@ class RecurringTransaction extends DataClass
     String? frequency,
     DateTime? nextDueDate,
     bool? isActive,
+    Value<int?> walletId = const Value.absent(),
   }) => RecurringTransaction(
     id: id ?? this.id,
     amount: amount ?? this.amount,
@@ -2222,6 +2258,7 @@ class RecurringTransaction extends DataClass
     frequency: frequency ?? this.frequency,
     nextDueDate: nextDueDate ?? this.nextDueDate,
     isActive: isActive ?? this.isActive,
+    walletId: walletId.present ? walletId.value : this.walletId,
   );
   RecurringTransaction copyWithCompanion(RecurringTransactionsCompanion data) {
     return RecurringTransaction(
@@ -2237,6 +2274,7 @@ class RecurringTransaction extends DataClass
           ? data.nextDueDate.value
           : this.nextDueDate,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      walletId: data.walletId.present ? data.walletId.value : this.walletId,
     );
   }
 
@@ -2250,7 +2288,8 @@ class RecurringTransaction extends DataClass
           ..write('categoryId: $categoryId, ')
           ..write('frequency: $frequency, ')
           ..write('nextDueDate: $nextDueDate, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('walletId: $walletId')
           ..write(')'))
         .toString();
   }
@@ -2265,6 +2304,7 @@ class RecurringTransaction extends DataClass
     frequency,
     nextDueDate,
     isActive,
+    walletId,
   );
   @override
   bool operator ==(Object other) =>
@@ -2277,7 +2317,8 @@ class RecurringTransaction extends DataClass
           other.categoryId == this.categoryId &&
           other.frequency == this.frequency &&
           other.nextDueDate == this.nextDueDate &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.walletId == this.walletId);
 }
 
 class RecurringTransactionsCompanion
@@ -2290,6 +2331,7 @@ class RecurringTransactionsCompanion
   final Value<String> frequency;
   final Value<DateTime> nextDueDate;
   final Value<bool> isActive;
+  final Value<int?> walletId;
   const RecurringTransactionsCompanion({
     this.id = const Value.absent(),
     this.amount = const Value.absent(),
@@ -2299,6 +2341,7 @@ class RecurringTransactionsCompanion
     this.frequency = const Value.absent(),
     this.nextDueDate = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.walletId = const Value.absent(),
   });
   RecurringTransactionsCompanion.insert({
     this.id = const Value.absent(),
@@ -2309,6 +2352,7 @@ class RecurringTransactionsCompanion
     required String frequency,
     required DateTime nextDueDate,
     this.isActive = const Value.absent(),
+    this.walletId = const Value.absent(),
   }) : amount = Value(amount),
        type = Value(type),
        categoryId = Value(categoryId),
@@ -2323,6 +2367,7 @@ class RecurringTransactionsCompanion
     Expression<String>? frequency,
     Expression<DateTime>? nextDueDate,
     Expression<bool>? isActive,
+    Expression<int>? walletId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2333,6 +2378,7 @@ class RecurringTransactionsCompanion
       if (frequency != null) 'frequency': frequency,
       if (nextDueDate != null) 'next_due_date': nextDueDate,
       if (isActive != null) 'is_active': isActive,
+      if (walletId != null) 'wallet_id': walletId,
     });
   }
 
@@ -2345,6 +2391,7 @@ class RecurringTransactionsCompanion
     Value<String>? frequency,
     Value<DateTime>? nextDueDate,
     Value<bool>? isActive,
+    Value<int?>? walletId,
   }) {
     return RecurringTransactionsCompanion(
       id: id ?? this.id,
@@ -2355,6 +2402,7 @@ class RecurringTransactionsCompanion
       frequency: frequency ?? this.frequency,
       nextDueDate: nextDueDate ?? this.nextDueDate,
       isActive: isActive ?? this.isActive,
+      walletId: walletId ?? this.walletId,
     );
   }
 
@@ -2385,6 +2433,9 @@ class RecurringTransactionsCompanion
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (walletId.present) {
+      map['wallet_id'] = Variable<int>(walletId.value);
+    }
     return map;
   }
 
@@ -2398,7 +2449,8 @@ class RecurringTransactionsCompanion
           ..write('categoryId: $categoryId, ')
           ..write('frequency: $frequency, ')
           ..write('nextDueDate: $nextDueDate, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('walletId: $walletId')
           ..write(')'))
         .toString();
   }
@@ -3023,6 +3075,34 @@ final class $$WalletTableTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<
+    $RecurringTransactionsTable,
+    List<RecurringTransaction>
+  >
+  _recurringTransactionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.recurringTransactions,
+        aliasName: $_aliasNameGenerator(
+          db.walletTable.id,
+          db.recurringTransactions.walletId,
+        ),
+      );
+
+  $$RecurringTransactionsTableProcessedTableManager
+  get recurringTransactionsRefs {
+    final manager = $$RecurringTransactionsTableTableManager(
+      $_db,
+      $_db.recurringTransactions,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recurringTransactionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$WalletTableTableFilterComposer
@@ -3141,6 +3221,32 @@ class $$WalletTableTableFilterComposer
                 $removeJoinBuilderFromRootComposer,
           ),
     );
+    return f(composer);
+  }
+
+  Expression<bool> recurringTransactionsRefs(
+    Expression<bool> Function($$RecurringTransactionsTableFilterComposer f) f,
+  ) {
+    final $$RecurringTransactionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.walletId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableFilterComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
@@ -3311,6 +3417,32 @@ class $$WalletTableTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> recurringTransactionsRefs<T extends Object>(
+    Expression<T> Function($$RecurringTransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$RecurringTransactionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recurringTransactions,
+          getReferencedColumn: (t) => t.walletId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecurringTransactionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.recurringTransactions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
 }
 
 class $$WalletTableTableTableManager
@@ -3329,6 +3461,7 @@ class $$WalletTableTableTableManager
           PrefetchHooks Function({
             bool transactionsFromWallet,
             bool transactionsToWallet,
+            bool recurringTransactionsRefs,
           })
         > {
   $$WalletTableTableTableManager(_$AppDatabase db, $WalletTableTable table)
@@ -3407,12 +3540,17 @@ class $$WalletTableTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({transactionsFromWallet = false, transactionsToWallet = false}) {
+              ({
+                transactionsFromWallet = false,
+                transactionsToWallet = false,
+                recurringTransactionsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (transactionsFromWallet) db.transactions,
                     if (transactionsToWallet) db.transactions,
+                    if (recurringTransactionsRefs) db.recurringTransactions,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -3459,6 +3597,27 @@ class $$WalletTableTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (recurringTransactionsRefs)
+                        await $_getPrefetchedData<
+                          WalletTableData,
+                          $WalletTableTable,
+                          RecurringTransaction
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletTableTableReferences
+                              ._recurringTransactionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletTableTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recurringTransactionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -3482,6 +3641,7 @@ typedef $$WalletTableTableProcessedTableManager =
       PrefetchHooks Function({
         bool transactionsFromWallet,
         bool transactionsToWallet,
+        bool recurringTransactionsRefs,
       })
     >;
 typedef $$TransactionsTableCreateCompanionBuilder =
@@ -4366,6 +4526,7 @@ typedef $$RecurringTransactionsTableCreateCompanionBuilder =
       required String frequency,
       required DateTime nextDueDate,
       Value<bool> isActive,
+      Value<int?> walletId,
     });
 typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
     RecurringTransactionsCompanion Function({
@@ -4377,6 +4538,7 @@ typedef $$RecurringTransactionsTableUpdateCompanionBuilder =
       Value<String> frequency,
       Value<DateTime> nextDueDate,
       Value<bool> isActive,
+      Value<int?> walletId,
     });
 
 final class $$RecurringTransactionsTableReferences
@@ -4408,6 +4570,28 @@ final class $$RecurringTransactionsTableReferences
       $_db.categories,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $WalletTableTable _walletIdTable(_$AppDatabase db) =>
+      db.walletTable.createAlias(
+        $_aliasNameGenerator(
+          db.recurringTransactions.walletId,
+          db.walletTable.id,
+        ),
+      );
+
+  $$WalletTableTableProcessedTableManager? get walletId {
+    final $_column = $_itemColumn<int>('wallet_id');
+    if ($_column == null) return null;
+    final manager = $$WalletTableTableTableManager(
+      $_db,
+      $_db.walletTable,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_walletIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -4473,6 +4657,29 @@ class $$RecurringTransactionsTableFilterComposer
           }) => $$CategoriesTableFilterComposer(
             $db: $db,
             $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$WalletTableTableFilterComposer get walletId {
+    final $$WalletTableTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.walletTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletTableTableFilterComposer(
+            $db: $db,
+            $table: $db.walletTable,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4549,6 +4756,29 @@ class $$RecurringTransactionsTableOrderingComposer
     );
     return composer;
   }
+
+  $$WalletTableTableOrderingComposer get walletId {
+    final $$WalletTableTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.walletTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletTableTableOrderingComposer(
+            $db: $db,
+            $table: $db.walletTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$RecurringTransactionsTableAnnotationComposer
@@ -4605,6 +4835,29 @@ class $$RecurringTransactionsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$WalletTableTableAnnotationComposer get walletId {
+    final $$WalletTableTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.walletId,
+      referencedTable: $db.walletTable,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WalletTableTableAnnotationComposer(
+            $db: $db,
+            $table: $db.walletTable,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$RecurringTransactionsTableTableManager
@@ -4620,7 +4873,7 @@ class $$RecurringTransactionsTableTableManager
           $$RecurringTransactionsTableUpdateCompanionBuilder,
           (RecurringTransaction, $$RecurringTransactionsTableReferences),
           RecurringTransaction,
-          PrefetchHooks Function({bool categoryId})
+          PrefetchHooks Function({bool categoryId, bool walletId})
         > {
   $$RecurringTransactionsTableTableManager(
     _$AppDatabase db,
@@ -4654,6 +4907,7 @@ class $$RecurringTransactionsTableTableManager
                 Value<String> frequency = const Value.absent(),
                 Value<DateTime> nextDueDate = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<int?> walletId = const Value.absent(),
               }) => RecurringTransactionsCompanion(
                 id: id,
                 amount: amount,
@@ -4663,6 +4917,7 @@ class $$RecurringTransactionsTableTableManager
                 frequency: frequency,
                 nextDueDate: nextDueDate,
                 isActive: isActive,
+                walletId: walletId,
               ),
           createCompanionCallback:
               ({
@@ -4674,6 +4929,7 @@ class $$RecurringTransactionsTableTableManager
                 required String frequency,
                 required DateTime nextDueDate,
                 Value<bool> isActive = const Value.absent(),
+                Value<int?> walletId = const Value.absent(),
               }) => RecurringTransactionsCompanion.insert(
                 id: id,
                 amount: amount,
@@ -4683,6 +4939,7 @@ class $$RecurringTransactionsTableTableManager
                 frequency: frequency,
                 nextDueDate: nextDueDate,
                 isActive: isActive,
+                walletId: walletId,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -4692,7 +4949,7 @@ class $$RecurringTransactionsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({categoryId = false}) {
+          prefetchHooksCallback: ({categoryId = false, walletId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -4727,6 +4984,21 @@ class $$RecurringTransactionsTableTableManager
                               )
                               as T;
                     }
+                    if (walletId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.walletId,
+                                referencedTable:
+                                    $$RecurringTransactionsTableReferences
+                                        ._walletIdTable(db),
+                                referencedColumn:
+                                    $$RecurringTransactionsTableReferences
+                                        ._walletIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
 
                     return state;
                   },
@@ -4751,7 +5023,7 @@ typedef $$RecurringTransactionsTableProcessedTableManager =
       $$RecurringTransactionsTableUpdateCompanionBuilder,
       (RecurringTransaction, $$RecurringTransactionsTableReferences),
       RecurringTransaction,
-      PrefetchHooks Function({bool categoryId})
+      PrefetchHooks Function({bool categoryId, bool walletId})
     >;
 
 class $AppDatabaseManager {
