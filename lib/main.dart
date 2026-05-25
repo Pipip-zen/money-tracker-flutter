@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:workmanager/workmanager.dart';
 import 'core/constants/app_theme.dart';
+import 'core/services/budget_reminder_service.dart';
 import 'core/services/recurring_service.dart';
 import 'data/database/app_database.dart';
 import 'data/database/seeder.dart';
@@ -32,7 +33,8 @@ void main() async {
   GetIt.instance.registerSingleton<AppDatabase>(db);
 
   await DatabaseSeeder.seedCategories(db);
-  
+  await BudgetReminderService(db).checkAndNotifyBudgets();
+
   await Workmanager().initialize(callbackDispatcher);
   await Workmanager().registerPeriodicTask(
     'recurring_check',

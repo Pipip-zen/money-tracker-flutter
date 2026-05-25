@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/services/budget_reminder_service.dart';
 import '../../domain/entities/transaction_entity.dart';
+import 'budget_providers.dart';
+import 'database_provider.dart';
 import 'repository_providers.dart';
 
 final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((
@@ -60,27 +63,33 @@ class TransactionNotifier extends AsyncNotifier<void> {
 
   Future<void> addTransaction(TransactionEntity transaction) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref
+    state = await AsyncValue.guard(() async {
+      await ref
           .read(transactionRepositoryProvider)
-          .insertTransaction(transaction),
-    );
+          .insertTransaction(transaction);
+      ref.invalidate(budgetsProvider);
+      await BudgetReminderService(
+        ref.read(databaseProvider),
+      ).checkAndNotifyBudgets();
+    });
   }
 
   Future<void> updateTransaction(TransactionEntity transaction) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref
+    state = await AsyncValue.guard(() async {
+      await ref
           .read(transactionRepositoryProvider)
-          .updateTransaction(transaction),
-    );
+          .updateTransaction(transaction);
+      ref.invalidate(budgetsProvider);
+    });
   }
 
   Future<void> deleteTransaction(int id) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(
-      () => ref.read(transactionRepositoryProvider).deleteTransaction(id),
-    );
+    state = await AsyncValue.guard(() async {
+      await ref.read(transactionRepositoryProvider).deleteTransaction(id);
+      ref.invalidate(budgetsProvider);
+    });
   }
 }
 
