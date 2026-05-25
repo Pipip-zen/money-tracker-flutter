@@ -16,11 +16,13 @@ import '../../widgets/wallet/wallet_picker_sheet.dart';
 class TransactionFormScreen extends ConsumerStatefulWidget {
   final TransactionEntity? transaction;
   final int? initialWalletId;
+  final String initialType;
 
   const TransactionFormScreen({
     super.key,
     this.transaction,
     this.initialWalletId,
+    this.initialType = 'expense',
   });
 
   @override
@@ -41,7 +43,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   void initState() {
     super.initState();
     final tx = widget.transaction;
-    _selectedType = tx?.type ?? 'expense';
+    _selectedType = tx?.type ?? widget.initialType;
     if (tx != null) {
       _amountController.text = NumberFormat.decimalPattern(
         'id_ID',
@@ -163,21 +165,26 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     });
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.transaction == null ? 'Tambah Transaksi' : 'Edit Transaksi',
-        ),
-      ),
+      appBar: AppBar(title: Text(_title)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
             SegmentedButton<String>(
+              showSelectedIcon: false,
               segments: const [
                 ButtonSegment(value: 'expense', label: Text('Keluar')),
                 ButtonSegment(value: 'income', label: Text('Masuk')),
                 ButtonSegment(value: 'transfer', label: Text('Transfer')),
               ],
+              style: ButtonStyle(
+                textStyle: WidgetStateProperty.all(
+                  const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                ),
+                padding: WidgetStateProperty.all(
+                  const EdgeInsets.symmetric(horizontal: 8),
+                ),
+              ),
               selected: {_selectedType},
               onSelectionChanged: (value) {
                 setState(() {
@@ -270,6 +277,12 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         ),
       ),
     );
+  }
+
+  String get _title {
+    if (widget.transaction != null) return 'Edit Transaksi';
+    if (_selectedType == 'transfer') return 'Transfer Dompet';
+    return 'Tambah Transaksi';
   }
 
   Widget _buildCategorySelector() {

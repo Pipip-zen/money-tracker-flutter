@@ -6,6 +6,7 @@ import '../../../core/constants/app_theme.dart';
 import '../../../domain/entities/wallet.dart';
 import '../../providers/wallet_provider.dart';
 import '../../widgets/wallet/wallet_card.dart';
+import '../transaction/transaction_form_screen.dart';
 import 'wallet_detail_screen.dart';
 import 'wallet_form_screen.dart';
 
@@ -17,7 +18,22 @@ class WalletListScreen extends ConsumerWidget {
     final walletsAsync = ref.watch(walletsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Dompet Saya')),
+      appBar: AppBar(
+        title: const Text('Dompet Saya'),
+        actions: [
+          IconButton(
+            tooltip: 'Transfer antar dompet',
+            icon: const Icon(Icons.swap_horiz_rounded),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    const TransactionFormScreen(initialType: 'transfer'),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: walletsAsync.when(
         data: (wallets) => _WalletListContent(wallets: wallets),
         loading: () => const Center(child: CircularProgressIndicator()),

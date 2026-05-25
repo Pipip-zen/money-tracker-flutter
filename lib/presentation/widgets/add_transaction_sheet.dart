@@ -76,6 +76,7 @@ class _AddTransactionBottomSheetState
       _selectedDate = tx.date;
       Future.microtask(() {
         ref.read(selectedWalletIdProvider.notifier).state = tx.walletId;
+        ref.read(selectedToWalletIdProvider.notifier).state = tx.toWalletId;
       });
     } else {
       _selectedType = 'expense';
@@ -98,13 +99,28 @@ class _AddTransactionBottomSheetState
       return;
     }
     if (_selectedCategory == null) {
-      _showError('Pilih kategori terlebih dahulu');
-      return;
+      if (_selectedType == 'transfer') {
+        // Transfer does not use category.
+      } else {
+        _showError('Pilih kategori terlebih dahulu');
+        return;
+      }
     }
     final walletId = ref.read(selectedWalletIdProvider);
+    final toWalletId = ref.read(selectedToWalletIdProvider);
     if (walletId == null) {
       _showError('Pilih dompet terlebih dahulu');
       return;
+    }
+    if (_selectedType == 'transfer') {
+      if (toWalletId == null) {
+        _showError('Pilih dompet tujuan');
+        return;
+      }
+      if (walletId == toWalletId) {
+        _showError('Dompet asal dan tujuan tidak boleh sama');
+        return;
+      }
     }
 
     final entity = TransactionEntity(
@@ -115,12 +131,18 @@ class _AddTransactionBottomSheetState
           : _noteController.text.trim(),
       date: _selectedDate,
       type: _selectedType,
-      categoryId: _selectedCategory!.id,
+      categoryId: _selectedType == 'transfer' ? null : _selectedCategory!.id,
       walletId: walletId,
-      toWalletId: null,
-      categoryName: _selectedCategory!.name,
-      categoryIcon: _selectedCategory!.icon,
-      categoryColor: _selectedCategory!.color,
+      toWalletId: _selectedType == 'transfer' ? toWalletId : null,
+      categoryName: _selectedType == 'transfer'
+          ? 'Transfer'
+          : _selectedCategory!.name,
+      categoryIcon: _selectedType == 'transfer'
+          ? Icons.swap_horiz_rounded.codePoint
+          : _selectedCategory!.icon,
+      categoryColor: _selectedType == 'transfer'
+          ? '#2196F3'
+          : _selectedCategory!.color,
     );
 
     final notifier = ref.read(addTransactionProvider.notifier);
@@ -150,6 +172,7 @@ class _AddTransactionBottomSheetState
   Widget build(BuildContext context) {
     final defaultWallet = ref.watch(defaultWalletProvider);
     final selectedWalletId = ref.watch(selectedWalletIdProvider);
+    final selectedToWalletId = ref.watch(selectedToWalletIdProvider);
     final wallets = ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[];
 
     defaultWallet.whenData((wallet) {
@@ -211,6 +234,7 @@ class _AddTransactionBottomSheetState
                     const SizedBox(height: 24),
 
                     SegmentedButton<String>(
+                      showSelectedIcon: false,
                       segments: const [
                         ButtonSegment(
                           value: 'expense',
@@ -220,6 +244,10 @@ class _AddTransactionBottomSheetState
                           value: 'income',
                           label: Text('Pemasukan'),
                         ),
+                        ButtonSegment(
+                          value: 'transfer',
+                          label: Text('Transfer'),
+                        ),
                       ],
                       selected: {_selectedType},
                       onSelectionChanged: (Set<String> newSelection) {
@@ -228,13 +256,28 @@ class _AddTransactionBottomSheetState
                           _selectedCategory = null;
                           _clearError();
                         });
+                        if (_selectedType != 'transfer') {
+                          ref.read(selectedToWalletIdProvider.notifier).state =
+                              null;
+                        }
                       },
                       style: ButtonStyle(
+                        textStyle: WidgetStateProperty.all(
+                          const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        padding: WidgetStateProperty.all(
+                          const EdgeInsets.symmetric(horizontal: 8),
+                        ),
                         backgroundColor: WidgetStateProperty.resolveWith<Color>(
                           (states) {
                             if (states.contains(WidgetState.selected)) {
                               return _selectedType == 'income'
                                   ? AppTheme.accentGreen.withValues(alpha: 0.2)
+                                  : _selectedType == 'transfer'
+                                  ? Colors.blue.withValues(alpha: 0.2)
                                   : Colors.red.withValues(alpha: 0.2);
                             }
                             return Colors.transparent;
@@ -280,21 +323,41 @@ class _AddTransactionBottomSheetState
                     ),
                     const SizedBox(height: 24),
 
-                    const Text(
-                      'Dompet',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    Text(
+                      _selectedType == 'transfer' ? 'Dari Dompet' : 'Dompet',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 12),
-                    _buildWalletSelector(wallets, selectedWalletId),
+                    _buildWalletSelector(
+                      wallets,
+                      selectedWalletId,
+                      isToWallet: false,
+                    ),
                     const SizedBox(height: 24),
 
-                    const Text(
-                      'Kategori',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildCategorySelector(),
-                    const SizedBox(height: 24),
+                    if (_selectedType == 'transfer') ...[
+                      const Text(
+                        'Ke Dompet',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildWalletSelector(
+                        wallets,
+                        selectedToWalletId,
+                        isToWallet: true,
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+
+                    if (_selectedType != 'transfer') ...[
+                      const Text(
+                        'Kategori',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildCategorySelector(),
+                      const SizedBox(height: 24),
+                    ],
 
                     const Text(
                       'Tanggal',
@@ -480,7 +543,11 @@ class _AddTransactionBottomSheetState
     );
   }
 
-  Widget _buildWalletSelector(List<Wallet> wallets, int? selectedWalletId) {
+  Widget _buildWalletSelector(
+    List<Wallet> wallets,
+    int? selectedWalletId, {
+    required bool isToWallet,
+  }) {
     final selectedWallet = wallets
         .where((wallet) => wallet.id == selectedWalletId)
         .firstOrNull;
@@ -495,7 +562,10 @@ class _AddTransactionBottomSheetState
           selectedWalletId: selectedWalletId,
         );
         if (selected == null) return;
-        ref.read(selectedWalletIdProvider.notifier).state = selected;
+        final provider = isToWallet
+            ? selectedToWalletIdProvider
+            : selectedWalletIdProvider;
+        ref.read(provider.notifier).state = selected;
         _clearError();
       },
       borderRadius: BorderRadius.circular(12),

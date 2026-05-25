@@ -70,7 +70,6 @@ class RecurringScreen extends ConsumerWidget {
         error: (e, st) => Center(child: Text('Error: $e')),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppTheme.primaryGreen,
         onPressed: () => _openAddSheet(context, null),
         child: const Icon(Icons.add),
       ),
@@ -510,10 +509,16 @@ class _AddRecurringSheetState extends ConsumerState<AddRecurringSheet> {
               const SizedBox(height: 20),
 
               SegmentedButton<String>(
+                showSelectedIcon: false,
                 segments: const [
                   ButtonSegment(value: 'expense', label: Text('Pengeluaran')),
                   ButtonSegment(value: 'income', label: Text('Pemasukan')),
                 ],
+                style: ButtonStyle(
+                  textStyle: WidgetStateProperty.all(
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
+                ),
                 selected: {_selectedType},
                 onSelectionChanged: (s) {
                   setState(() {

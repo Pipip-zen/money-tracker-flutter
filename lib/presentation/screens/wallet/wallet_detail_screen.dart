@@ -35,6 +35,19 @@ class WalletDetailScreen extends ConsumerWidget {
               title: Text(wallet.name),
               actions: [
                 IconButton(
+                  tooltip: 'Transfer',
+                  icon: const Icon(Icons.swap_horiz_rounded),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => TransactionFormScreen(
+                        initialWalletId: walletId,
+                        initialType: 'transfer',
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
                   icon: const Icon(Icons.edit_rounded),
                   onPressed: () => Navigator.push(
                     context,
@@ -81,13 +94,7 @@ class WalletDetailScreen extends ConsumerWidget {
               ],
             ),
             floatingActionButton: FloatingActionButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      TransactionFormScreen(initialWalletId: walletId),
-                ),
-              ),
+              onPressed: () => _showAddMenu(context, walletId),
               child: const Icon(Icons.add),
             ),
           ),
@@ -97,6 +104,50 @@ class WalletDetailScreen extends ConsumerWidget {
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (_, _) =>
           const Scaffold(body: Center(child: Text('Gagal memuat dompet'))),
+    );
+  }
+
+  void _showAddMenu(BuildContext context, int walletId) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.add_rounded),
+              title: const Text('Tambah transaksi'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        TransactionFormScreen(initialWalletId: walletId),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.swap_horiz_rounded),
+              title: const Text('Transfer antar dompet'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => TransactionFormScreen(
+                      initialWalletId: walletId,
+                      initialType: 'transfer',
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
