@@ -11,6 +11,7 @@ import '../../../domain/entities/wallet.dart';
 import '../../providers/category_providers.dart';
 import '../../providers/transaction_providers.dart';
 import '../../providers/wallet_provider.dart';
+import '../../widgets/wallet/wallet_icon_mark.dart';
 import '../../widgets/wallet/wallet_picker_sheet.dart';
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
@@ -351,13 +352,13 @@ class _WalletField extends StatelessWidget {
             CircleAvatar(
               radius: 16,
               backgroundColor: color?.withValues(alpha: 0.14),
-              child: Icon(
-                wallet == null
-                    ? Icons.wallet_rounded
-                    : _walletIcon(wallet.iconName),
-                color: color,
-                size: 18,
-              ),
+              child: wallet == null
+                  ? Icon(Icons.wallet_rounded, color: color, size: 18)
+                  : WalletIconMark(
+                      iconName: wallet.iconName,
+                      color: color,
+                      size: 18,
+                    ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -382,18 +383,4 @@ double _parseMoney(String value) {
 
 Color _parseColor(String hex) {
   return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
-}
-
-IconData _walletIcon(String name) {
-  return switch (name) {
-    'cash' => Icons.payments_rounded,
-    'mandiri' => Icons.account_balance_rounded,
-    'bri' => Icons.account_balance_rounded,
-    'bca' => Icons.account_balance_rounded,
-    'ovo' => Icons.account_balance_wallet_rounded,
-    'gopay' => Icons.motorcycle_rounded,
-    'dana' => Icons.water_drop_rounded,
-    'shopee' => Icons.shopping_bag_rounded,
-    _ => Icons.account_balance_wallet_rounded,
-  };
 }

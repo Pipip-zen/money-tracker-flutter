@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../providers/wallet_provider.dart';
 import '../../screens/wallet/wallet_form_screen.dart';
+import 'wallet_icon_mark.dart';
 
 class WalletPickerSheet extends ConsumerWidget {
   final int? selectedWalletId;
@@ -66,9 +67,10 @@ class WalletPickerSheet extends ConsumerWidget {
                         contentPadding: EdgeInsets.zero,
                         leading: CircleAvatar(
                           backgroundColor: color.withValues(alpha: 0.14),
-                          child: Icon(
-                            _walletIcon(wallet.iconName),
+                          child: WalletIconMark(
+                            iconName: wallet.iconName,
                             color: color,
+                            size: 22,
                           ),
                         ),
                         title: Text(wallet.name),
@@ -121,18 +123,4 @@ class WalletPickerSheet extends ConsumerWidget {
 
 Color _parseColor(String hex) {
   return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
-}
-
-IconData _walletIcon(String name) {
-  return switch (name) {
-    'cash' => Icons.payments_rounded,
-    'mandiri' => Icons.account_balance_rounded,
-    'bri' => Icons.account_balance_rounded,
-    'bca' => Icons.account_balance_rounded,
-    'ovo' => Icons.account_balance_wallet_rounded,
-    'gopay' => Icons.motorcycle_rounded,
-    'dana' => Icons.water_drop_rounded,
-    'shopee' => Icons.shopping_bag_rounded,
-    _ => Icons.account_balance_wallet_rounded,
-  };
 }

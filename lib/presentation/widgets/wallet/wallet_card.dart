@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../domain/entities/wallet.dart';
+import 'wallet_icon_mark.dart';
 
 class WalletCard extends StatelessWidget {
   final Wallet wallet;
@@ -43,7 +44,11 @@ class WalletCard extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: color.withValues(alpha: 0.14),
-                child: Icon(_walletIcon(wallet.iconName), color: color),
+                child: WalletIconMark(
+                  iconName: wallet.iconName,
+                  color: color,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -119,20 +124,6 @@ class WalletCard extends StatelessWidget {
 Color _parseColor(String hex) {
   final normalized = hex.replaceAll('#', '');
   return Color(int.parse('FF$normalized', radix: 16));
-}
-
-IconData _walletIcon(String name) {
-  return switch (name) {
-    'cash' => Icons.payments_rounded,
-    'mandiri' => Icons.account_balance_rounded,
-    'bri' => Icons.account_balance_rounded,
-    'bca' => Icons.account_balance_rounded,
-    'ovo' => Icons.account_balance_wallet_rounded,
-    'gopay' => Icons.motorcycle_rounded,
-    'dana' => Icons.water_drop_rounded,
-    'shopee' => Icons.shopping_bag_rounded,
-    _ => Icons.account_balance_wallet_rounded,
-  };
 }
 
 String _walletTypeLabel(WalletType type) {

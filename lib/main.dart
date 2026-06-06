@@ -64,9 +64,51 @@ class MyApp extends ConsumerWidget {
       themeMode: themeMode,
       home: onboardingAsync.when(
         data: (isDone) => isDone ? const MainShell() : const OnboardingScreen(),
-        loading: () =>
-            const Scaffold(body: Center(child: CircularProgressIndicator())),
+        loading: () => const _StartupLoadingScreen(),
         error: (_, _) => const MainShell(),
+      ),
+    );
+  }
+}
+
+class _StartupLoadingScreen extends StatelessWidget {
+  const _StartupLoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/icon/icon.png', width: 112, height: 112),
+                const SizedBox(height: 24),
+                Text(
+                  'Catetin',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 28),
+                const SizedBox(
+                  width: 180,
+                  child: LinearProgressIndicator(minHeight: 6),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'Manajemen keuangan harian jadi lebih rapi.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -29,15 +29,9 @@ class _WalletFormScreenState extends ConsumerState<WalletFormScreen> {
   bool get _isEdit => widget.wallet != null;
 
   static const _icons = [
-    ('cash', Icons.payments_rounded, 'Cash'),
-    ('mandiri', Icons.account_balance_rounded, 'Mandiri'),
-    ('bri', Icons.account_balance_rounded, 'BRI'),
-    ('bca', Icons.account_balance_rounded, 'BCA'),
-    ('ovo', Icons.account_balance_wallet_rounded, 'OVO'),
-    ('gopay', Icons.motorcycle_rounded, 'GoPay'),
-    ('dana', Icons.water_drop_rounded, 'DANA'),
-    ('shopee', Icons.shopping_bag_rounded, 'Shopee'),
-    ('custom', Icons.wallet_rounded, 'Custom'),
+    ('cash', Icons.payments_rounded, WalletType.cash),
+    ('bank', Icons.account_balance_rounded, WalletType.bank),
+    ('ewallet', Icons.account_balance_wallet_rounded, WalletType.ewallet),
   ];
 
   static const _colors = [
@@ -61,8 +55,10 @@ class _WalletFormScreenState extends ConsumerState<WalletFormScreen> {
     _initialBalanceController.text = wallet == null
         ? ''
         : NumberFormat.decimalPattern('id_ID').format(wallet.initialBalance);
-    _type = wallet?.type ?? WalletType.custom;
-    _iconName = wallet?.iconName ?? 'wallet';
+    _type = wallet?.type ?? WalletType.cash;
+    _iconName = wallet == null
+        ? 'cash'
+        : _normalizedIcon(wallet.iconName, wallet.type);
     _colorHex = wallet?.colorHex ?? '#2196F3';
     _isDefault = wallet?.isDefault ?? false;
   }
@@ -171,7 +167,10 @@ class _WalletFormScreenState extends ConsumerState<WalletFormScreen> {
                   final item = _icons[index];
                   final selected = _iconName == item.$1;
                   return InkWell(
-                    onTap: () => setState(() => _iconName = item.$1),
+                    onTap: () => setState(() {
+                      _iconName = item.$1;
+                      _type = item.$3;
+                    }),
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       decoration: BoxDecoration(
@@ -185,17 +184,7 @@ class _WalletFormScreenState extends ConsumerState<WalletFormScreen> {
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(item.$2, size: 18),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              item.$3,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ],
+                        children: [Icon(item.$2, size: 22)],
                       ),
                     ),
                   );
@@ -271,6 +260,19 @@ String _typeLabel(WalletType type) {
     WalletType.bank => 'Bank',
     WalletType.ewallet => 'E-Wallet',
     WalletType.custom => 'Custom',
+  };
+}
+
+String _normalizedIcon(String iconName, WalletType type) {
+  return switch (iconName) {
+    'cash' => 'cash',
+    'bank' || 'mandiri' || 'bri' || 'bca' => 'bank',
+    'ewallet' || 'ovo' || 'gopay' || 'dana' || 'shopee' => 'ewallet',
+    _ => switch (type) {
+      WalletType.bank => 'bank',
+      WalletType.ewallet => 'ewallet',
+      _ => 'cash',
+    },
   };
 }
 

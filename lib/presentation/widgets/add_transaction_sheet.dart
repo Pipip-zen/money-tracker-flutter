@@ -11,6 +11,7 @@ import '../../../domain/entities/wallet.dart';
 import '../providers/category_providers.dart';
 import '../providers/transaction_providers.dart';
 import '../providers/wallet_provider.dart';
+import 'wallet/wallet_icon_mark.dart';
 import 'wallet/wallet_picker_sheet.dart';
 import '../../core/utils/icon_utils.dart';
 
@@ -582,13 +583,17 @@ class _AddTransactionBottomSheetState
             CircleAvatar(
               radius: 18,
               backgroundColor: color.withValues(alpha: 0.14),
-              child: Icon(
-                selectedWallet == null
-                    ? Icons.account_balance_wallet_rounded
-                    : _walletIcon(selectedWallet.iconName),
-                color: color,
-                size: 20,
-              ),
+              child: selectedWallet == null
+                  ? Icon(
+                      Icons.account_balance_wallet_rounded,
+                      color: color,
+                      size: 20,
+                    )
+                  : WalletIconMark(
+                      iconName: selectedWallet.iconName,
+                      color: color,
+                      size: 20,
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -636,20 +641,6 @@ class _AddTransactionBottomSheetState
 
 Color _parseColor(String hex) {
   return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
-}
-
-IconData _walletIcon(String name) {
-  return switch (name) {
-    'cash' => Icons.payments_rounded,
-    'mandiri' => Icons.account_balance_rounded,
-    'bri' => Icons.account_balance_rounded,
-    'bca' => Icons.account_balance_rounded,
-    'ovo' => Icons.account_balance_wallet_rounded,
-    'gopay' => Icons.motorcycle_rounded,
-    'dana' => Icons.water_drop_rounded,
-    'shopee' => Icons.shopping_bag_rounded,
-    _ => Icons.account_balance_wallet_rounded,
-  };
 }
 
 class CurrencyInputFormatter extends TextInputFormatter {

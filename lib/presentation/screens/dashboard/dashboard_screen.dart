@@ -17,6 +17,7 @@ import '../budget/budget_screen.dart';
 import '../wallet/wallet_detail_screen.dart';
 import '../wallet/wallet_list_screen.dart';
 import '../../../core/utils/icon_utils.dart';
+import '../../widgets/wallet/wallet_icon_mark.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -765,8 +766,8 @@ class _DashboardWalletTile extends StatelessWidget {
               CircleAvatar(
                 radius: 18,
                 backgroundColor: color.withValues(alpha: 0.14),
-                child: Icon(
-                  _walletIcon(wallet.iconName),
+                child: WalletIconMark(
+                  iconName: wallet.iconName,
                   color: color,
                   size: 18,
                 ),
@@ -802,20 +803,6 @@ class _DashboardWalletTile extends StatelessWidget {
 
   Color _parseColor(String hex) {
     return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
-  }
-
-  IconData _walletIcon(String name) {
-    return switch (name) {
-      'cash' => Icons.payments_rounded,
-      'mandiri' => Icons.account_balance_rounded,
-      'bri' => Icons.account_balance_rounded,
-      'bca' => Icons.account_balance_rounded,
-      'ovo' => Icons.account_balance_wallet_rounded,
-      'gopay' => Icons.motorcycle_rounded,
-      'dana' => Icons.water_drop_rounded,
-      'shopee' => Icons.shopping_bag_rounded,
-      _ => Icons.account_balance_wallet_rounded,
-    };
   }
 }
 

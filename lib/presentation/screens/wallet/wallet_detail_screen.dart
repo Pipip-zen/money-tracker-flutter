@@ -6,6 +6,7 @@ import '../../../domain/entities/transaction_entity.dart';
 import '../../../domain/entities/wallet.dart';
 import '../../providers/transaction_providers.dart';
 import '../../providers/wallet_provider.dart';
+import '../../widgets/wallet/wallet_icon_mark.dart';
 import '../transaction/transaction_form_screen.dart';
 import 'wallet_form_screen.dart';
 
@@ -176,7 +177,11 @@ class _WalletHeader extends ConsumerWidget {
           CircleAvatar(
             radius: 32,
             backgroundColor: color.withValues(alpha: 0.14),
-            child: Icon(_walletIcon(wallet.iconName), color: color, size: 32),
+            child: WalletIconMark(
+              iconName: wallet.iconName,
+              color: color,
+              size: 32,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -339,20 +344,6 @@ class _TransactionTile extends StatelessWidget {
 
 Color _parseColor(String hex) {
   return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
-}
-
-IconData _walletIcon(String name) {
-  return switch (name) {
-    'cash' => Icons.payments_rounded,
-    'mandiri' => Icons.account_balance_rounded,
-    'bri' => Icons.account_balance_rounded,
-    'bca' => Icons.account_balance_rounded,
-    'ovo' => Icons.account_balance_wallet_rounded,
-    'gopay' => Icons.motorcycle_rounded,
-    'dana' => Icons.water_drop_rounded,
-    'shopee' => Icons.shopping_bag_rounded,
-    _ => Icons.account_balance_wallet_rounded,
-  };
 }
 
 String _walletTypeLabel(WalletType type) {
