@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/services/budget_reminder_service.dart';
 import '../../domain/entities/transaction_entity.dart';
 import 'budget_providers.dart';
-import 'database_provider.dart';
 import 'repository_providers.dart';
 
 final transactionsStreamProvider = StreamProvider<List<TransactionEntity>>((
@@ -68,9 +66,6 @@ class TransactionNotifier extends AsyncNotifier<void> {
           .read(transactionRepositoryProvider)
           .insertTransaction(transaction);
       ref.invalidate(budgetsProvider);
-      await BudgetReminderService(
-        ref.read(databaseProvider),
-      ).checkAndNotifyBudgets();
     });
   }
 

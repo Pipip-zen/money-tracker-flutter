@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../data/database/app_database.dart';
 
@@ -13,19 +12,14 @@ class RecurringService {
   factory RecurringService() => _instance;
   RecurringService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
-
   Future<void> runCheck() async {
     final dbFolder = await getApplicationDocumentsDirectory();
     final dbFile = File(p.join(dbFolder.path, 'db.sqlite'));
-
     final db = AppDatabase.fromExecutor(NativeDatabase(dbFile));
 
     try {
       final now = DateTime.now();
       final dueItems = await db.recurringTransactionDao.getDueRecurring(now);
-      int count = 0;
 
       for (final item in dueItems) {
         final defaultWallet = await db.walletDao.getDefaultWallet();
@@ -42,8 +36,6 @@ class RecurringService {
           ),
         );
 
-        final nextDue = _nextDueDate(item.nextDueDate, item.frequency);
-
         await db.recurringTransactionDao.updateRecurring(
           RecurringTransactionsCompanion(
             id: Value(item.id),
@@ -53,16 +45,10 @@ class RecurringService {
             categoryId: Value(item.categoryId),
             walletId: Value(item.walletId),
             frequency: Value(item.frequency),
-            nextDueDate: Value(nextDue),
+            nextDueDate: Value(_nextDueDate(item.nextDueDate, item.frequency)),
             isActive: Value(item.isActive),
           ),
         );
-        count++;
-      }
-
-      if (count > 0) {
-        await _initializeNotifications();
-        await _sendNotification(count);
       }
     } finally {
       await db.close();
@@ -79,31 +65,5 @@ class RecurringService {
       default:
         return DateTime(current.year, current.month + 1, current.day);
     }
-  }
-
-  Future<void> _initializeNotifications() async {
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
-    await _notifications.initialize(
-      settings: const InitializationSettings(android: androidSettings),
-    );
-  }
-
-  Future<void> _sendNotification(int count) async {
-    const details = AndroidNotificationDetails(
-      'recurring_channel',
-      'Transaksi Rutin',
-      channelDescription: 'Notifikasi transaksi rutin otomatis',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
-
-    await _notifications.show(
-      id: 1001,
-      title: '🔁 Transaksi Rutin Dicatat',
-      body: '$count transaksi rutin berhasil ditambahkan secara otomatis.',
-      notificationDetails: const NotificationDetails(android: details),
-    );
   }
 }

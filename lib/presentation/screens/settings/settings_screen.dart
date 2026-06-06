@@ -10,7 +10,6 @@ import '../../providers/wallet_provider.dart';
 import '../recurring/recurring_screen.dart';
 import '../wallet/wallet_list_screen.dart';
 import 'category_management_screen.dart';
-import 'widgets/daily_reminder_setting.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -240,7 +239,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           // APP
           _buildSectionHeader('Aplikasi'),
-          const DailyReminderSetting(),
           SwitchListTile(
             secondary: const Icon(Icons.dark_mode, color: Colors.indigo),
             title: const Text('Mode Gelap'),
