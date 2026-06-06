@@ -1,4 +1,4 @@
-package com.rafifnuha.moneytracker
+package com.catetin
 
 import io.flutter.embedding.android.FlutterActivity
 

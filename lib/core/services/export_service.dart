@@ -88,7 +88,7 @@ class ExportService {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              'Money Tracker',
+              'Catetin',
               style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 4),
@@ -215,7 +215,7 @@ class ExportService {
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path, mimeType: mimeType)],
-        text: 'Ekspor dari Money Tracker',
+        text: 'Ekspor dari Catetin',
       ),
     );
   }

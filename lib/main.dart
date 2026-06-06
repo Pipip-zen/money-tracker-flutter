@@ -58,7 +58,7 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp(
       scaffoldMessengerKey: scaffoldMessengerKey,
-      title: 'Money Tracker',
+      title: 'Catetin',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
