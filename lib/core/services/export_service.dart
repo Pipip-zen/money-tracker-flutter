@@ -1,15 +1,19 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:share_plus/share_plus.dart';
+import 'package:flutter/services.dart';
 
 import '../../domain/entities/transaction_entity.dart';
 import '../../domain/entities/wallet.dart';
 
 class ExportService {
+  static const _downloadsChannel = MethodChannel('catetin/downloads');
+
   static final _dateFormat = DateFormat('dd/MM/yyyy', 'id_ID');
   static final _currency = NumberFormat.currency(
     locale: 'id_ID',
@@ -51,14 +55,13 @@ class ExportService {
       );
     }
 
-    final dir = await getApplicationDocumentsDirectory();
     final fileName =
         'transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
-    final file = File('${dir.path}/$fileName');
-    await file.writeAsString(buffer.toString());
-
-    await _share(file, 'text/csv');
-    return file;
+    return _saveToDownloads(
+      fileName: fileName,
+      mimeType: 'text/csv',
+      bytes: utf8.encode(buffer.toString()),
+    );
   }
 
   // ─── PDF ───────────────────────────────────────────────────────────────────
@@ -165,14 +168,13 @@ class ExportService {
       ),
     );
 
-    final dir = await getApplicationDocumentsDirectory();
     final fileName =
         'laporan_${month}_${year}_${DateTime.now().millisecondsSinceEpoch}.pdf';
-    final file = File('${dir.path}/$fileName');
-    await file.writeAsBytes(await doc.save());
-
-    await _share(file, 'application/pdf');
-    return file;
+    return _saveToDownloads(
+      fileName: fileName,
+      mimeType: 'application/pdf',
+      bytes: await doc.save(),
+    );
   }
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -211,13 +213,40 @@ class ExportService {
     );
   }
 
-  static Future<void> _share(File file, String mimeType) async {
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path, mimeType: mimeType)],
-        text: 'Ekspor dari Catetin',
-      ),
-    );
+  static Future<File> _saveToDownloads({
+    required String fileName,
+    required String mimeType,
+    required List<int> bytes,
+  }) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/$fileName');
+    await file.writeAsBytes(bytes);
+
+    if (Platform.isAndroid) {
+      try {
+        await _downloadsChannel.invokeMethod<String>('saveFile', {
+          'fileName': fileName,
+          'mimeType': mimeType,
+          'bytes': Uint8List.fromList(bytes),
+        });
+      } catch (e) {
+        // Keep going even if MediaStore Downloads copy fails
+        debugPrint('ExportService: Failed to copy to public Downloads: $e');
+      }
+    } else {
+      try {
+        final downloadsDir = await getDownloadsDirectory();
+        if (downloadsDir != null) {
+          final publicFile = File('${downloadsDir.path}/$fileName');
+          await publicFile.writeAsBytes(bytes);
+          return publicFile;
+        }
+      } catch (e) {
+        debugPrint('ExportService: Failed to save to public Downloads: $e');
+      }
+    }
+
+    return file;
   }
 
   static String _typeLabel(String type) {

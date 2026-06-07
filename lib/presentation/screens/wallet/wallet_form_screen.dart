@@ -81,7 +81,7 @@ class _WalletFormScreenState extends ConsumerState<WalletFormScreen> {
       type: _type,
       iconName: _iconName,
       colorHex: _colorHex,
-      initialBalance: _isEdit ? widget.wallet!.initialBalance : initialBalance,
+      initialBalance: initialBalance,
       currency: widget.wallet?.currency ?? 'IDR',
       isDefault: _isDefault,
       isActive: widget.wallet?.isActive ?? true,
@@ -218,7 +218,6 @@ class _WalletFormScreenState extends ConsumerState<WalletFormScreen> {
               const SizedBox(height: 20),
               TextFormField(
                 controller: _initialBalanceController,
-                enabled: !_isEdit,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: const InputDecoration(
@@ -226,6 +225,12 @@ class _WalletFormScreenState extends ConsumerState<WalletFormScreen> {
                   prefixText: 'Rp ',
                   border: OutlineInputBorder(),
                 ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Saldo awal wajib diisi';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 12),
               SwitchListTile(

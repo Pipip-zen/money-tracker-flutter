@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/constants/app_theme.dart';
@@ -18,10 +19,12 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _profileFormKey = GlobalKey<FormState>();
+  final _walletFormKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _customWalletController = TextEditingController();
-  final Set<String> _selectedWalletPresets = {};
+  final _initialBalanceController = TextEditingController();
+  String? _selectedWalletPresetId;
   int _step = 0;
   bool _saving = false;
 
@@ -47,6 +50,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _customWalletController.dispose();
+    _initialBalanceController.dispose();
     super.dispose();
   }
 
@@ -69,7 +73,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           );
 
       if (createWallets) {
-        await _createSelectedWallets();
+        final valid = _walletFormKey.currentState?.validate() ?? false;
+        if (!valid || !_hasWalletSelection) {
+          setState(() => _saving = false);
+          return;
+        }
+        await _createFirstWallet();
       }
 
       final prefs = await SharedPreferences.getInstance();
@@ -89,60 +98,46 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  Future<void> _createSelectedWallets() async {
+  Future<void> _createFirstWallet() async {
     final repository = ref.read(walletRepositoryProvider);
     final now = DateTime.now();
-    final selectedPresets = _walletPresets
-        .where((preset) => _selectedWalletPresets.contains(preset.id))
-        .toList();
-    final wallets = [
-      ...selectedPresets.map(
-        (preset) => Wallet(
-          id: 0,
-          name: preset.name,
-          type: preset.type,
-          iconName: preset.iconName,
-          colorHex: preset.colorHex,
-          initialBalance: 0,
-          currency: 'IDR',
-          isDefault: false,
-          isActive: true,
-          sortOrder: selectedPresets.indexOf(preset),
-          createdAt: now,
-          updatedAt: now,
-        ),
-      ),
-      if (_customWalletController.text.trim().isNotEmpty)
-        Wallet(
-          id: 0,
-          name: _customWalletController.text.trim(),
-          type: WalletType.custom,
-          iconName: 'custom',
-          colorHex: '#607D8B',
-          initialBalance: 0,
-          currency: 'IDR',
-          isDefault: false,
-          isActive: true,
-          sortOrder: selectedPresets.length,
-          createdAt: now,
-          updatedAt: now,
-        ),
-    ];
+    final customWalletName = _customWalletController.text.trim();
+    final preset = _selectedWalletPreset;
+    final initialBalance = _parseMoney(_initialBalanceController.text);
 
-    int? firstWalletId;
-    for (final wallet in wallets) {
-      final id = await repository.createWallet(wallet);
-      firstWalletId ??= id;
-    }
+    await repository.cleanupStarterWalletsForOnboarding();
 
-    if (firstWalletId != null) {
-      await repository.setDefaultWallet(firstWalletId);
-    }
+    final wallet = Wallet(
+      id: 0,
+      name: customWalletName.isNotEmpty ? customWalletName : preset!.name,
+      type: customWalletName.isNotEmpty ? WalletType.custom : preset!.type,
+      iconName: customWalletName.isNotEmpty ? 'custom' : preset!.iconName,
+      colorHex: customWalletName.isNotEmpty ? '#607D8B' : preset!.colorHex,
+      initialBalance: initialBalance,
+      currency: 'IDR',
+      isDefault: true,
+      isActive: true,
+      sortOrder: 0,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    final walletId = await repository.createWallet(wallet);
+    await repository.setDefaultWallet(walletId);
   }
 
   bool get _hasWalletSelection =>
-      _selectedWalletPresets.isNotEmpty ||
+      _selectedWalletPresetId != null ||
       _customWalletController.text.trim().isNotEmpty;
+
+  _WalletPreset? get _selectedWalletPreset {
+    final id = _selectedWalletPresetId;
+    if (id == null) return null;
+    for (final preset in _walletPresets) {
+      if (preset.id == id) return preset;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -257,82 +252,136 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _buildWalletStep() {
-    return Column(
-      key: const ValueKey('wallet-step'),
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildHeader(
-          'Buat dompet pertama',
-          'Pilih dompet yang kamu pakai. Bisa dilewati dan dibuat nanti.',
-        ),
-        const SizedBox(height: 30),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          alignment: WrapAlignment.center,
-          children: _walletPresets.map((preset) {
-            final selected = _selectedWalletPresets.contains(preset.id);
-            final color = _parseColor(preset.colorHex);
-            return FilterChip(
-              selected: selected,
-              label: Text(preset.name),
-              avatar: WalletIconMark(
-                iconName: preset.iconName,
-                color: color,
-                size: 18,
+    return Form(
+      key: _walletFormKey,
+      child: Column(
+        key: const ValueKey('wallet-step'),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildHeader(
+            'Buat dompet pertama',
+            'Pilih satu dompet dan isi saldo awal.',
+          ),
+          const SizedBox(height: 30),
+          FormField<String>(
+            validator: (_) {
+              if (!_hasWalletSelection) {
+                return 'Pilih satu dompet atau isi dompet custom';
+              }
+              return null;
+            },
+            builder: (field) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: _walletPresets.map((preset) {
+                      final selected = _selectedWalletPresetId == preset.id;
+                      final color = _parseColor(preset.colorHex);
+                      return ChoiceChip(
+                        selected: selected,
+                        label: Text(preset.name),
+                        avatar: WalletIconMark(
+                          iconName: preset.iconName,
+                          color: color,
+                          size: 18,
+                        ),
+                        onSelected: _saving
+                            ? null
+                            : (value) {
+                                setState(() {
+                                  _selectedWalletPresetId = value
+                                      ? preset.id
+                                      : null;
+                                  if (value) _customWalletController.clear();
+                                });
+                                field.didChange(_selectedWalletPresetId);
+                              },
+                      );
+                    }).toList(),
+                  ),
+                  if (field.hasError) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      field.errorText!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _customWalletController,
+            enabled: !_saving,
+            decoration: InputDecoration(
+              labelText: 'Dompet custom',
+              hintText: 'Contoh: Tabungan pribadi',
+              prefixIcon: const Icon(Icons.wallet_rounded),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              onSelected: _saving
-                  ? null
-                  : (value) {
-                      setState(() {
-                        if (value) {
-                          _selectedWalletPresets.add(preset.id);
-                        } else {
-                          _selectedWalletPresets.remove(preset.id);
-                        }
-                      });
-                    },
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _customWalletController,
-          enabled: !_saving,
-          decoration: InputDecoration(
-            labelText: 'Dompet custom',
-            hintText: 'Contoh: Tabungan pribadi',
-            prefixIcon: const Icon(Icons.wallet_rounded),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-          onChanged: (_) => setState(() {}),
-        ),
-        const SizedBox(height: 28),
-        SizedBox(
-          width: double.infinity,
-          height: 54,
-          child: ElevatedButton(
-            onPressed: _saving
-                ? null
-                : () => _finish(createWallets: _hasWalletSelection),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryGreen,
-              foregroundColor: Colors.white,
             ),
-            child: _saving
-                ? const SizedBox.square(
-                    dimension: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(_hasWalletSelection ? 'Mulai' : 'Lewati dan mulai'),
+            onChanged: (value) {
+              setState(() {
+                if (value.trim().isNotEmpty) {
+                  _selectedWalletPresetId = null;
+                }
+              });
+            },
           ),
-        ),
-        const SizedBox(height: 10),
-        TextButton(
-          onPressed: _saving ? null : () => setState(() => _step = 0),
-          child: const Text('Kembali'),
-        ),
-      ],
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _initialBalanceController,
+            enabled: !_saving,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              labelText: 'Saldo awal',
+              prefixText: 'Rp ',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Saldo awal wajib diisi';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _saving ? null : () => _finish(createWallets: true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGreen,
+                foregroundColor: Colors.white,
+              ),
+              child: _saving
+                  ? const SizedBox.square(
+                      dimension: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Mulai'),
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextButton(
+            onPressed: _saving ? null : () => setState(() => _step = 0),
+            child: const Text('Kembali'),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -355,4 +404,9 @@ class _WalletPreset {
 
 Color _parseColor(String hex) {
   return Color(int.parse('FF${hex.replaceAll('#', '')}', radix: 16));
+}
+
+double _parseMoney(String value) {
+  final normalized = value.replaceAll(RegExp(r'[^0-9]'), '');
+  return double.tryParse(normalized) ?? 0;
 }

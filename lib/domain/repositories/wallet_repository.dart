@@ -8,6 +8,7 @@ abstract class WalletRepository {
   Future<void> updateWallet(Wallet wallet);
   Future<void> setDefaultWallet(int id);
   Future<void> softDeleteWallet(int id);
+  Future<void> cleanupStarterWalletsForOnboarding();
   Future<double> getWalletBalance(int walletId);
   Future<void> transfer({
     required int fromWalletId,

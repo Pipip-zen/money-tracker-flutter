@@ -9,6 +9,7 @@ import '../../providers/transaction_providers.dart';
 import '../../providers/wallet_provider.dart';
 import '../recurring/recurring_screen.dart';
 import '../wallet/wallet_list_screen.dart';
+import '../../widgets/export_result_sheet.dart';
 import 'category_management_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -23,6 +24,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final now = DateTime.now();
     final firstDay = DateTime(now.year, now.month, 1);
     final lastDay = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    bool isLoadingShown = false;
 
     try {
       final allTxs = await ref.read(transactionsStreamProvider.future);
@@ -30,33 +34,63 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return t.date.isAfter(firstDay.subtract(const Duration(seconds: 1))) &&
             t.date.isBefore(lastDay.add(const Duration(seconds: 1)));
       }).toList();
-      if (txs.isEmpty && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      
+      if (!mounted) return;
+      if (txs.isEmpty) {
+        messenger.showSnackBar(
           const SnackBar(content: Text('Tidak ada data bulan ini')),
         );
         return;
       }
 
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: CircularProgressIndicator(color: AppTheme.primaryGreen),
+        ),
+      );
+      isLoadingShown = true;
+
+      final wallets = await _walletsById();
+      if (!mounted) return;
+      
       if (isPdf) {
-        await ExportService.exportToPDF(
+        final file = await ExportService.exportToPDF(
           txs,
           now.month,
           now.year,
-          walletsById: await _walletsById(),
+          walletsById: wallets,
         );
+        if (!mounted) return;
+        if (isLoadingShown) {
+          navigator.pop(); // Pop loading
+          isLoadingShown = false;
+        }
+        ExportResultBottomSheet.show(context, file, 'PDF');
       } else {
-        await ExportService.exportToCSV(txs, walletsById: await _walletsById());
+        final file = await ExportService.exportToCSV(txs, walletsById: wallets);
+        if (!mounted) return;
+        if (isLoadingShown) {
+          navigator.pop(); // Pop loading
+          isLoadingShown = false;
+        }
+        ExportResultBottomSheet.show(context, file, 'CSV');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Ekspor gagal: $e')));
+      if (!mounted) return;
+      if (isLoadingShown) {
+        navigator.pop(); // Pop loading
       }
+      messenger.showSnackBar(SnackBar(content: Text('Ekspor gagal: $e')));
     }
   }
 
   void _exportCustomRange() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    
     final range = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2000),
@@ -76,7 +110,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
     );
 
-    if (range != null && mounted) {
+    if (range != null) {
+      if (!mounted) return;
       final endDay = DateTime(
         range.end.year,
         range.end.month,
@@ -85,6 +120,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         59,
         59,
       );
+      bool isLoadingShown = false;
       try {
         final allTxs = await ref.read(transactionsStreamProvider.future);
         final txs = allTxs.where((t) {
@@ -93,21 +129,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ) &&
               t.date.isBefore(endDay.add(const Duration(seconds: 1)));
         }).toList();
-        if (txs.isEmpty && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+        
+        if (!mounted) return;
+        if (txs.isEmpty) {
+          messenger.showSnackBar(
             const SnackBar(
               content: Text('Tidak ada data di rentang waktu ini'),
             ),
           );
           return;
         }
-        await ExportService.exportToCSV(txs, walletsById: await _walletsById());
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Ekspor gagal: $e')));
+
+        // Show loading
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryGreen),
+          ),
+        );
+        isLoadingShown = true;
+
+        final wallets = await _walletsById();
+        if (!mounted) return;
+        final file = await ExportService.exportToCSV(txs, walletsById: wallets);
+        
+        if (!mounted) return;
+        if (isLoadingShown) {
+          navigator.pop(); // Pop loading
+          isLoadingShown = false;
         }
+        ExportResultBottomSheet.show(context, file, 'CSV');
+      } catch (e) {
+        if (!mounted) return;
+        if (isLoadingShown) {
+          navigator.pop(); // Pop loading
+        }
+        messenger.showSnackBar(SnackBar(content: Text('Ekspor gagal: $e')));
       }
     }
   }

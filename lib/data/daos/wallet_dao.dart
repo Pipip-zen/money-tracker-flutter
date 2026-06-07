@@ -51,6 +51,27 @@ class WalletDao extends DatabaseAccessor<AppDatabase> with _$WalletDaoMixin {
     );
   }
 
+  Future<int> cleanupStarterWalletsForOnboarding() {
+    return customUpdate(
+      '''
+      UPDATE wallets
+      SET is_active = 0,
+          is_default = 0,
+          updated_at = ?
+      WHERE name = 'Kas Umum'
+        AND initial_balance = 0
+        AND NOT EXISTS (
+          SELECT 1
+          FROM transactions t
+          WHERE t.wallet_id = wallets.id
+             OR t.to_wallet_id = wallets.id
+        )
+      ''',
+      variables: [Variable<DateTime>(DateTime.now())],
+      updates: {walletTable},
+    );
+  }
+
   Future<void> setDefaultWallet(int id) {
     return transaction(() async {
       await update(walletTable).write(

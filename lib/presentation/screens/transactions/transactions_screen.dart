@@ -9,6 +9,7 @@ import '../../../domain/entities/category_entity.dart';
 import '../../providers/category_providers.dart';
 import '../../providers/transaction_providers.dart';
 import '../../widgets/add_transaction_sheet.dart';
+import '../../widgets/export_result_sheet.dart';
 import '../../../core/utils/icon_utils.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
@@ -55,19 +56,39 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             ListTile(
               leading: CircleAvatar(
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                child: const Icon(Icons.table_chart, color: AppTheme.primaryGreen),
+                child: const Icon(
+                  Icons.table_chart,
+                  color: AppTheme.primaryGreen,
+                ),
               ),
               title: const Text('Ekspor ke CSV'),
               subtitle: const Text('File spreadsheet (.csv)'),
               onTap: () async {
                 Navigator.pop(ctx);
+                
+                // Show loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(
+                    child: CircularProgressIndicator(color: AppTheme.primaryGreen),
+                  ),
+                );
+                
                 final messenger = ScaffoldMessenger.of(context);
                 try {
-                  await ExportService.exportToCSV(_lastLoaded);
+                  final file = await ExportService.exportToCSV(_lastLoaded);
+                  if (context.mounted) {
+                    Navigator.pop(context); // Pop loading
+                    ExportResultBottomSheet.show(context, file, 'CSV');
+                  }
                 } catch (e) {
-                  messenger.showSnackBar(
-                    SnackBar(content: Text('Gagal ekspor: $e')),
-                  );
+                  if (context.mounted) {
+                    Navigator.pop(context); // Pop loading
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Gagal ekspor: $e')),
+                    );
+                  }
                 }
               },
             ),
@@ -80,17 +101,34 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               subtitle: const Text('Laporan bulanan (.pdf)'),
               onTap: () async {
                 Navigator.pop(ctx);
+                
+                // Show loading
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(
+                    child: CircularProgressIndicator(color: AppTheme.primaryGreen),
+                  ),
+                );
+                
                 final messenger = ScaffoldMessenger.of(context);
                 try {
-                  await ExportService.exportToPDF(
+                  final file = await ExportService.exportToPDF(
                     _lastLoaded,
                     _currentMonth.month,
                     _currentMonth.year,
                   );
+                  if (context.mounted) {
+                    Navigator.pop(context); // Pop loading
+                    ExportResultBottomSheet.show(context, file, 'PDF');
+                  }
                 } catch (e) {
-                  messenger.showSnackBar(
-                    SnackBar(content: Text('Gagal ekspor: $e')),
-                  );
+                  if (context.mounted) {
+                    Navigator.pop(context); // Pop loading
+                    messenger.showSnackBar(
+                      SnackBar(content: Text('Gagal ekspor: $e')),
+                    );
+                  }
                 }
               },
             ),
@@ -143,8 +181,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   void _deleteTransaction(TransactionEntity tx) async {
     final snapshot = tx;
     try {
-      await ref.read(addTransactionProvider.notifier).deleteTransaction(snapshot.id);
-      
+      await ref
+          .read(addTransactionProvider.notifier)
+          .deleteTransaction(snapshot.id);
+
       if (mounted) {
         ScaffoldMessenger.of(context)
           ..clearSnackBars()
@@ -167,9 +207,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal menghapus')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Gagal menghapus')));
       }
     }
   }
@@ -219,7 +259,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: IconButton(
-              icon: const Icon(Icons.ios_share_rounded, color: Colors.white),
+              icon: const Icon(
+                Icons.file_download_rounded,
+                color: Colors.white,
+              ),
               onPressed: () => _showExportSheet(context),
             ),
           ),
@@ -275,7 +318,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                             horizontal: 16,
                             vertical: 8,
                           ),
-                          color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHigh,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -283,7 +328,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                 _formatDateHeader(date),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                 ),
                               ),
                               Row(
@@ -488,11 +535,18 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long, size: 80, color: Theme.of(context).colorScheme.surfaceContainerHigh),
+          Icon(
+            Icons.receipt_long,
+            size: 80,
+            color: Theme.of(context).colorScheme.surfaceContainerHigh,
+          ),
           const SizedBox(height: 16),
           Text(
             'Belum ada transaksi di bulan ini',
-            style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 16),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.outline,
+              fontSize: 16,
+            ),
           ),
         ],
       ),

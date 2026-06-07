@@ -49,6 +49,11 @@ class WalletRepositoryImpl implements WalletRepository {
   }
 
   @override
+  Future<void> cleanupStarterWalletsForOnboarding() async {
+    await _walletDao.cleanupStarterWalletsForOnboarding();
+  }
+
+  @override
   Future<void> updateWallet(Wallet wallet) async {
     await _walletDao.updateWallet(_unmap(wallet));
   }

@@ -88,7 +88,6 @@ class AppDatabase extends _$AppDatabase {
     return MigrationStrategy(
       onCreate: (Migrator m) async {
         await m.createAll();
-        await _ensureDefaultWallet();
       },
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
@@ -103,7 +102,6 @@ class AppDatabase extends _$AppDatabase {
           } catch (_) {}
           await m.createAll();
           await customStatement('PRAGMA foreign_keys = ON');
-          await _ensureDefaultWallet();
         } else {
           if (from < 3) {
             await m.createTable(walletTable);
