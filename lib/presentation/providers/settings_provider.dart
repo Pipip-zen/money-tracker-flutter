@@ -6,17 +6,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'database_provider.dart';
 import 'transaction_providers.dart';
 import 'budget_providers.dart';
+import 'wallet_provider.dart';
 
 // --- Theme Provider ---
 
-final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((
+  ref,
+) {
   return ThemeModeNotifier();
 });
 
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   static const _themeKey = 'theme_mode';
 
-  ThemeModeNotifier() : super(ThemeMode.system) {
+  ThemeModeNotifier() : super(ThemeMode.light) {
     _loadTheme();
   }
 
@@ -28,7 +31,7 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     } else if (themeString == 'light') {
       state = ThemeMode.light;
     } else {
-      state = ThemeMode.system;
+      state = ThemeMode.light;
     }
   }
 
@@ -52,11 +55,15 @@ final resetDataProvider = Provider((ref) {
   return () async {
     final db = ref.read(databaseProvider);
     await db.resetAllData();
-    
+
     // Invalidate caches to refresh UIs
     ref.invalidate(transactionsStreamProvider);
     ref.invalidate(transactionsByDateRangeProvider);
     ref.invalidate(monthlyTotalProvider);
     ref.invalidate(budgetsProvider);
+    ref.invalidate(walletsProvider);
+    ref.invalidate(defaultWalletProvider);
+    ref.read(selectedWalletIdProvider.notifier).state = null;
+    ref.read(selectedToWalletIdProvider.notifier).state = null;
   };
 });

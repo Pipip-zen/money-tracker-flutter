@@ -34,7 +34,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return t.date.isAfter(firstDay.subtract(const Duration(seconds: 1))) &&
             t.date.isBefore(lastDay.add(const Duration(seconds: 1)));
       }).toList();
-      
+
       if (!mounted) return;
       if (txs.isEmpty) {
         messenger.showSnackBar(
@@ -55,7 +55,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
       final wallets = await _walletsById();
       if (!mounted) return;
-      
+
       if (isPdf) {
         final file = await ExportService.exportToPDF(
           txs,
@@ -90,7 +90,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _exportCustomRange() async {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
-    
+
     final range = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2000),
@@ -129,7 +129,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ) &&
               t.date.isBefore(endDay.add(const Duration(seconds: 1)));
         }).toList();
-        
+
         if (!mounted) return;
         if (txs.isEmpty) {
           messenger.showSnackBar(
@@ -153,7 +153,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         final wallets = await _walletsById();
         if (!mounted) return;
         final file = await ExportService.exportToCSV(txs, walletsById: wallets);
-        
+
         if (!mounted) return;
         if (isLoadingShown) {
           navigator.pop(); // Pop loading
@@ -176,7 +176,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       builder: (ctx) => AlertDialog(
         title: const Text('Reset Semua Data'),
         content: const Text(
-          'Tindakan ini akan menghapus permanen SEMUA histori transaksi, anggaran, dan data berulang. '
+          'Tindakan ini akan menghapus permanen SEMUA dompet, histori transaksi, anggaran, dan data berulang. '
           'Kategori yang Anda miliki tidak akan dihapus.\n\nAnda yakin ingin melanjutkan?',
         ),
         actions: [

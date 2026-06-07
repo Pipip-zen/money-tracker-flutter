@@ -144,9 +144,10 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> resetAllData() async {
     await transaction(() async {
+      await delete(recurringTransactions).go();
       await delete(transactions).go();
       await delete(budgets).go();
-      await delete(recurringTransactions).go();
+      await delete(walletTable).go();
     });
   }
 
